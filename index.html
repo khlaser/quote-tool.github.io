@@ -35,12 +35,6 @@
             --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.3);
-            --font-size-small: 0.85rem;
-            --font-size-medium: 1rem;
-            --font-size-large: 1.2rem;
-            --spacing-small: 10px;
-            --spacing-medium: 15px;
-            --spacing-large: 20px;
         }
         
         /* ==================== 基础样式层 ==================== */
@@ -131,7 +125,7 @@
             gap: 10px;
         }
         
-        .panel-button {
+        .history-panel-btn {
             background: none;
             border: 1px solid var(--gray-300);
             border-radius: 8px;
@@ -143,19 +137,26 @@
             transition: all 0.2s;
         }
         
-        .panel-button:hover {
+        .history-panel-btn:hover {
             background-color: var(--gray-100);
         }
         
-        .panel-button--history {
-            /* 历史面板按钮样式 */
+        .settings-btn {
+            background: none;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
         
-        .panel-button--settings {
-            /* 设置按钮样式 */
+        .settings-btn:hover {
+            background-color: var(--gray-100);
         }
         
-        /* ==================== 布局样式层 ==================== */
         .main-layout {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
@@ -170,55 +171,46 @@
             }
         }
         
-        /* ==================== 公共组件样式 ==================== */
-        .card, .button {
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s ease;
-        }
-        
+        /* ==================== 卡片样式 ==================== */
         .card {
             background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
             padding: 18px;
             margin-bottom: 18px;
+            transition: box-shadow 0.3s ease;
         }
         
-        .button {
-            cursor: pointer;
-            padding: 8px 14px;
-        }
-        
-        /* ==================== 卡片样式 ==================== */
         .card:hover {
             box-shadow: 0 8px 10px -1px rgba(0, 0, 0, 0.1);
         }
         
-        .card__header {
+        .card-header {
             font-size: 1.25rem;
             font-weight: bold;
             margin-bottom: 12px;
         }
         
-        .card__footer {
+        .card-footer {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
             margin-top: 16px;
         }
         
-        .card--bordered {
+        .card-with-border {
             border: 1px solid var(--gray-300);
         }
         
-        .card--shadow-light {
+        .card-shadow-light {
             box-shadow: var(--shadow-sm);
         }
         
-        .card--shadow-heavy {
+        .card-shadow-heavy {
             box-shadow: var(--shadow-lg);
         }
         
-        .card__title {
+        .card-title {
             font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 1rem;
@@ -229,7 +221,7 @@
             gap: 10px;
         }
         
-        .card__title i {
+        .card-title i {
             color: var(--primary-color);
         }
         
@@ -338,6 +330,30 @@
             border-color: var(--primary-color);
         }
         
+        /* 省份按钮样式 */
+        .province-btn {
+            background-color: var(--gray-200);
+            color: var(--gray-900);
+            border: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            transition: none;
+        }
+        
+        /* 省份按钮选中状态 */
+        .province-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
         .quote-result {
             padding: 15px;
             background: linear-gradient(135deg, var(--blue-light-100) 0%, var(--blue-light-200) 100%);
@@ -384,59 +400,63 @@
         }
         
         /* ==================== 按钮样式 ==================== */
-        .button {
+        .btn {
+            padding: 8px 14px;
             border: none;
+            border-radius: var(--radius-sm);
             font-weight: 500;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
             font-size: 0.85rem;
         }
         
-        .button--primary {
+        .btn-primary {
             background-color: var(--primary-color);
             color: white;
         }
         
-        .button--primary:hover {
+        .btn-primary:hover {
             background-color: var(--secondary-color);
         }
         
-        .button--secondary {
+        .btn-secondary {
             background-color: var(--gray-200);
             color: var(--gray-900);
         }
         
-        .button--secondary:hover {
+        .btn-secondary:hover {
             background-color: var(--gray-300);
         }
         
-        .button--success {
+        .btn-success {
             background-color: var(--success-color);
             color: white;
         }
         
-        .button--success:hover {
+        .btn-success:hover {
             background-color: var(--success-dark);
         }
         
-        .button--danger {
+        .btn-danger {
             background-color: var(--danger-color);
             color: white;
         }
         
-        .button--danger:hover {
+        .btn-danger:hover {
             background-color: var(--danger-dark);
         }
         
-        .button--link {
+        .btn-link {
             background: transparent;
             color: var(--primary-color);
             text-decoration: underline;
         }
         
-        .button--disabled {
+        .btn-disabled {
             background-color: var(--gray-400);
             color: var(--gray-600);
             cursor: not-allowed;
@@ -658,7 +678,7 @@
             color: var(--primary-color);
         }
         
-        .button--small {
+        .btn-sm {
             padding: 5px 10px;
             font-size: 0.8rem;
         }
@@ -916,11 +936,8 @@
             align-items: center;
             gap: 12px;
             max-width: 300px;
-            border-left: 4px solid var(--primary-color);
-        }
-        
-        .notification.animate {
             animation: slideIn 0.3s ease-out;
+            border-left: 4px solid var(--primary-color);
         }
         
         .notification-success {
@@ -1428,7 +1445,7 @@
         <div class="history-panel-content">
             <!-- 历史记录操作按钮 -->
             <div class="history-actions">
-                <button class="button button--secondary button--small" id="clearHistoryBtn">
+                <button class="btn btn-secondary btn-sm" id="clearHistoryBtn">
                     <i class="fas fa-trash"></i>
                     清除历史
                 </button>
@@ -1451,11 +1468,11 @@
                     <span>KH Laser 报价系统</span>
                 </div>
                 <div class="header-actions">
-                    <button class="panel-button panel-button--history" id="openHistoryPanel">
+                    <button class="history-panel-btn" id="openHistoryPanel">
                         <i class="fas fa-history"></i>
                         <span>历史记录</span>
                     </button>
-                    <button class="panel-button panel-button--settings" id="openSettings">
+                    <button class="settings-btn" id="openSettings">
                         <i class="fas fa-cog"></i>
                         <span>系统设置</span>
                     </button>
@@ -1469,7 +1486,7 @@
                         <!-- 汇率和价格来源在同一行 -->
                         <div class="rate-price-row">
                             <div class="rate-card">
-                                <h2 class="card__title">
+                                <h2 class="card-title">
                                     <i class="fas fa-exchange-alt"></i>
                                     汇率设置 (1 USD = ? CNY)
                                 </h2>
@@ -1479,7 +1496,7 @@
                             </div>
                             
                             <div class="price-source-card">
-                                <h2 class="card__title">
+                                <h2 class="card-title">
                                     <i class="fas fa-tags"></i>
                                     价格来源
                                 </h2>
@@ -1491,7 +1508,7 @@
                             </div>
                         </div>
                         
-                        <h2 class="card__title">
+                        <h2 class="card-title">
                             <i class="fas fa-cogs"></i>
                             产品配置
                         </h2>
@@ -1593,7 +1610,7 @@
                 <div class="right-column">
                     <!-- 数量与费用设置（移动到原历史记录位置） -->
                     <div class="quantity-fees-card">
-                        <h2 class="card__title">
+                        <h2 class="card-title">
                             <i class="fas fa-calculator"></i>
                             数量与费用设置
                         </h2>
@@ -1635,11 +1652,54 @@
                                 <input type="text" id="zipCode" placeholder="请输入邮编" style="width: 100%;">
                             </div>
                         </div>
+                        
+                        <!-- 省份选择区域 -->
+                        <div style="margin-top: 15px;">
+                            <label style="font-weight: 500; font-size: 0.92rem; margin-bottom: 8px; display: block;">省份选择</label>
+                            <div class="layout-row" style="margin-bottom: 8px;">
+                                <button class="btn province-btn" data-province="青岛">青岛</button>
+                                <button class="btn province-btn" data-province="浙江">浙江</button>
+                                <button class="btn province-btn" data-province="广东">广东</button>
+                            </div>
+                            <select id="provinceSelect" style="width: 100%;">
+                                <option value="">请选择其他省份</option>
+                                <option value="北京">北京</option>
+                                <option value="上海">上海</option>
+                                <option value="江苏">江苏</option>
+                                <option value="山东">山东</option>
+                                <option value="天津">天津</option>
+                                <option value="河北">河北</option>
+                                <option value="山西">山西</option>
+                                <option value="内蒙古">内蒙古</option>
+                                <option value="辽宁">辽宁</option>
+                                <option value="吉林">吉林</option>
+                                <option value="黑龙江">黑龙江</option>
+                                <option value="安徽">安徽</option>
+                                <option value="福建">福建</option>
+                                <option value="江西">江西</option>
+                                <option value="河南">河南</option>
+                                <option value="湖北">湖北</option>
+                                <option value="湖南">湖南</option>
+                                <option value="广西">广西</option>
+                                <option value="海南">海南</option>
+                                <option value="重庆">重庆</option>
+                                <option value="四川">四川</option>
+                                <option value="贵州">贵州</option>
+                                <option value="云南">云南</option>
+                                <option value="西藏">西藏</option>
+                                <option value="陕西">陕西</option>
+                                <option value="甘肃">甘肃</option>
+                                <option value="青海">青海</option>
+                                <option value="宁夏">宁夏</option>
+                                <option value="新疆">新疆</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <!-- 最终报价 -->
                     <div class="card">
-                        <h2 class="card__title">
+                        <h2 class="card-title">
                             <i class="fas fa-file-invoice-dollar"></i>
                             最终报价
                         </h2>
@@ -1714,19 +1774,19 @@
                         </div>
                         
                         <div class="quick-actions">
-                            <button class="button button--primary" id="selectTemplateBtn">
+                            <button class="btn btn-primary" id="selectTemplateBtn">
                                 <i class="fas fa-file-alt"></i>
                                 选择模板
                             </button>
-                            <button class="button button--success" id="copyQuote">
+                            <button class="btn btn-success" id="copyQuote">
                                 <i class="fas fa-copy"></i>
                                 复制报价
                             </button>
-                            <button class="button button--secondary" id="loadLastQuote">
+                            <button class="btn btn-secondary" id="loadLastQuote">
                                 <i class="fas fa-history"></i>
                                 加载上次
                             </button>
-                            <button class="button button--danger" id="resetCalculation">
+                            <button class="btn btn-danger" id="resetCalculation">
                                 <i class="fas fa-redo"></i>
                                 重置
                             </button>
@@ -1757,7 +1817,7 @@
                         <div class="tab-content active" id="productTab">
                             <div class="settings-section">
                                 <div class="settings-section-title">产品数据编辑</div>
-                                <button class="button button--primary" id="editProductData" style="width: 100%; margin-bottom: 10px;">
+                                <button class="btn btn-primary" id="editProductData" style="width: 100%; margin-bottom: 10px;">
                                     <i class="fas fa-edit"></i> 编辑产品和配件数据
                                 </button>
                                 
@@ -1804,9 +1864,9 @@
                         </div>
                         
                         <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="button button--success" id="saveProductData">保存</button>
-                            <button class="button button--danger" id="deleteProductData">删除</button>
-                            <button class="button button--secondary" id="clearProductForm">清空</button>
+                            <button class="btn btn-success" id="saveProductData">保存</button>
+                            <button class="btn btn-danger" id="deleteProductData">删除</button>
+                            <button class="btn btn-secondary" id="clearProductForm">清空</button>
                         </div>
                     </div>
                     
@@ -1950,7 +2010,7 @@
         </div>
         
         <footer>
-            <p>© 2026 KH Laser 报价系统 | 版本 2.7.5</p>
+            <p>© 2026 KH Laser 报价系统 | 版本 2.7.7</p>
         </footer>
     </div>
 
@@ -2048,6 +2108,314 @@
         // ==================== 工具函数模块结束 ====================
         
         // ==================== 内置数据区域开始 ====================
+        // 国内运费规则数据结构
+        const DOMESTIC_SHIPPING_RULES = {
+            '青岛': {
+                // 青岛的规则单独定义
+                specialRule: true
+            },
+            '山东': {
+                firstWeightPrice: 25,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 25 },
+                    { min: 0.11, max: 0.5, price: 200 },
+                    { min: 0.51, max: 1.5, price: 190 },
+                    { min: 1.51, max: 4, price: 180 },
+                    { min: 4.01, max: Infinity, price: 160 }
+                ]
+            },
+            '江苏': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '浙江': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '上海': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '安徽': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '天津': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '河北': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '河南': {
+                firstWeightPrice: 30,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 30 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 220 },
+                    { min: 1.51, max: 4, price: 210 },
+                    { min: 4.01, max: Infinity, price: 180 }
+                ]
+            },
+            '山西': {
+                firstWeightPrice: 35,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 35 },
+                    { min: 0.11, max: 0.5, price: 260 },
+                    { min: 0.51, max: 1.5, price: 240 },
+                    { min: 1.51, max: 4, price: 220 },
+                    { min: 4.01, max: Infinity, price: 200 }
+                ]
+            },
+            '北京': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 240 },
+                    { min: 0.51, max: 1.5, price: 240 },
+                    { min: 1.51, max: 4, price: 220 },
+                    { min: 4.01, max: Infinity, price: 200 }
+                ]
+            },
+            '广东': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 280 },
+                    { min: 0.51, max: 1.5, price: 270 },
+                    { min: 1.51, max: 4, price: 260 },
+                    { min: 4.01, max: Infinity, price: 230 }
+                ]
+            },
+            '福建': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 280 },
+                    { min: 0.51, max: 1.5, price: 270 },
+                    { min: 1.51, max: 4, price: 260 },
+                    { min: 4.01, max: Infinity, price: 220 }
+                ]
+            },
+            '湖北': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 280 },
+                    { min: 0.51, max: 1.5, price: 270 },
+                    { min: 1.51, max: 4, price: 260 },
+                    { min: 4.01, max: Infinity, price: 220 }
+                ]
+            },
+            '湖南': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 280 },
+                    { min: 0.51, max: 1.5, price: 270 },
+                    { min: 1.51, max: 4, price: 260 },
+                    { min: 4.01, max: Infinity, price: 220 }
+                ]
+            },
+            '江西': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 300 },
+                    { min: 0.51, max: 1.5, price: 280 },
+                    { min: 1.51, max: 4, price: 270 },
+                    { min: 4.01, max: Infinity, price: 240 }
+                ]
+            },
+            '辽宁': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 300 },
+                    { min: 0.51, max: 1.5, price: 280 },
+                    { min: 1.51, max: 4, price: 270 },
+                    { min: 4.01, max: Infinity, price: 240 }
+                ]
+            },
+            '陕西': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 300 },
+                    { min: 0.51, max: 1.5, price: 280 },
+                    { min: 1.51, max: 4, price: 270 },
+                    { min: 4.01, max: Infinity, price: 240 }
+                ]
+            },
+            '吉林': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 320 },
+                    { min: 0.51, max: 1.5, price: 300 },
+                    { min: 1.51, max: 4, price: 280 },
+                    { min: 4.01, max: Infinity, price: 260 }
+                ]
+            },
+            '广西': {
+                firstWeightPrice: 45,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 45 },
+                    { min: 0.11, max: 0.5, price: 300 },
+                    { min: 0.51, max: 1.5, price: 300 },
+                    { min: 1.51, max: 4, price: 280 },
+                    { min: 4.01, max: Infinity, price: 260 }
+                ]
+            },
+            '黑龙江': {
+                firstWeightPrice: 45,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 45 },
+                    { min: 0.11, max: 0.5, price: 340 },
+                    { min: 0.51, max: 1.5, price: 320 },
+                    { min: 1.51, max: 4, price: 300 },
+                    { min: 4.01, max: Infinity, price: 260 }
+                ]
+            },
+            '内蒙古': {
+                firstWeightPrice: 50,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 50 },
+                    { min: 0.11, max: 0.5, price: 400 },
+                    { min: 0.51, max: 1.5, price: 390 },
+                    { min: 1.51, max: 4, price: 380 },
+                    { min: 4.01, max: Infinity, price: 360 }
+                ]
+            },
+            '四川': {
+                firstWeightPrice: 50,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 50 },
+                    { min: 0.11, max: 0.5, price: 400 },
+                    { min: 0.51, max: 1.5, price: 390 },
+                    { min: 1.51, max: 4, price: 380 },
+                    { min: 4.01, max: Infinity, price: 360 }
+                ]
+            },
+            '重庆': {
+                firstWeightPrice: 50,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 50 },
+                    { min: 0.11, max: 0.5, price: 400 },
+                    { min: 0.51, max: 1.5, price: 390 },
+                    { min: 1.51, max: 4, price: 380 },
+                    { min: 4.01, max: Infinity, price: 360 }
+                ]
+            },
+            '贵州': {
+                firstWeightPrice: 50,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 50 },
+                    { min: 0.11, max: 0.5, price: 400 },
+                    { min: 0.51, max: 1.5, price: 390 },
+                    { min: 1.51, max: 4, price: 380 },
+                    { min: 4.01, max: Infinity, price: 360 }
+                ]
+            },
+            '宁夏': {
+                firstWeightPrice: 50,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 50 },
+                    { min: 0.11, max: 0.5, price: 400 },
+                    { min: 0.51, max: 1.5, price: 390 },
+                    { min: 1.51, max: 4, price: 380 },
+                    { min: 4.01, max: Infinity, price: 360 }
+                ]
+            },
+            '云南': {
+                firstWeightPrice: 60,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 60 },
+                    { min: 0.11, max: 0.5, price: 600 },
+                    { min: 0.51, max: 1.5, price: 560 },
+                    { min: 1.51, max: 4, price: 540 },
+                    { min: 4.01, max: Infinity, price: 500 }
+                ]
+            },
+            '海南': {
+                firstWeightPrice: 70,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 70 },
+                    { min: 0.11, max: 0.5, price: 600 },
+                    { min: 0.51, max: 1.5, price: 560 },
+                    { min: 1.51, max: 4, price: 540 },
+                    { min: 4.01, max: Infinity, price: 500 }
+                ]
+            },
+            '甘肃': {
+                firstWeightPrice: 70,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 70 },
+                    { min: 0.11, max: 0.5, price: 600 },
+                    { min: 0.51, max: 1.5, price: 560 },
+                    { min: 1.51, max: 4, price: 540 },
+                    { min: 4.01, max: Infinity, price: 500 }
+                ]
+            },
+            '青海': {
+                firstWeightPrice: 70,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 70 },
+                    { min: 0.11, max: 0.5, price: 600 },
+                    { min: 0.51, max: 1.5, price: 560 },
+                    { min: 1.51, max: 4, price: 540 },
+                    { min: 4.01, max: Infinity, price: 500 }
+                ]
+            },
+            '其他': {
+                firstWeightPrice: 40,
+                cbmRanges: [
+                    { min: 0, max: 0.1, price: 40 },
+                    { min: 0.11, max: 0.5, price: 280 },
+                    { min: 0.51, max: 1.5, price: 270 },
+                    { min: 1.51, max: 4, price: 260 },
+                    { min: 4.01, max: Infinity, price: 230 }
+                ]
+            }
+        };
+
         const DEFAULT_DATA = {
             machines: [
                 { id: 'kh1', series: 'A', model: '350A', power: '50W', price: 5025, priceTier2: 5377, priceTier3: 6030, packingSize: '110*80*85', cbm: 0.8, volumeWeight: 125, actualWeight: 103 },
@@ -3467,6 +3835,72 @@ KH Laser 销售部
                         console.error('截断字符串失败:', error);
                         return str.substring(0, maxLength) + suffix;
                     }
+                },
+                
+                // 国内运费计算函数
+                calculateDomesticShipping(cbm, province) {
+                    try {
+                        // 青岛的特殊规则
+                        if (province === "青岛") {
+                            if (cbm <= 5) {
+                                return 500;
+                            } else {
+                                return Math.ceil(500 + (cbm - 5) * 110);
+                            }
+                        }
+                        
+                        // 其他省份的规则
+                        const provinceRule = DOMESTIC_SHIPPING_RULES[province] || DOMESTIC_SHIPPING_RULES['其他'];
+                        const firstWeightPrice = provinceRule.firstWeightPrice;
+                        
+                        // 找到对应的CBM区间单价
+                        let unitPrice = 0;
+                        let foundRange = false;
+                        
+                        for (const range of provinceRule.cbmRanges) {
+                            // 处理 Infinity 的情况
+                            if (range.max === Infinity) {
+                                if (cbm >= range.min) {
+                                    unitPrice = range.price;
+                                    foundRange = true;
+                                    break;
+                                }
+                            } else if (range.max) {
+                                if (cbm >= range.min && cbm <= range.max) {
+                                    unitPrice = range.price;
+                                    foundRange = true;
+                                    break;
+                                }
+                            } else {
+                                if (cbm >= range.min) {
+                                    unitPrice = range.price;
+                                    foundRange = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 兜底逻辑：如果没有找到匹配的区间，使用最后一个区间的价格
+                        if (!foundRange && provinceRule.cbmRanges.length > 0) {
+                            const lastRange = provinceRule.cbmRanges[provinceRule.cbmRanges.length - 1];
+                            unitPrice = lastRange.price;
+                        }
+                        
+                        // 计算运费
+                        const shippingFee = (firstWeightPrice + cbm * unitPrice) * 1.07;
+                        // 进一制，返回整数
+                        return Math.ceil(shippingFee);
+                    } catch (error) {
+                        console.error('计算国内运费失败:', error);
+                        // 兜底逻辑：返回一个默认值
+                        return Math.ceil(30 + cbm * 200 * 1.07);
+                    }
+                },
+                
+                // 预留国际运费计算函数
+                calcInternationalShipping() {
+                    // 本阶段不实现国际运费规则
+                    return 0;
                 }
             };
             
@@ -3587,6 +4021,7 @@ KH Laser 销售部
                             quantity: 1,
                             country: 'US',
                             zipCode: '',
+                            selectedProvince: '',
                             priceSource: 'tier1',
                             totalCNY: 0,
                             totalUSD: 0,
@@ -4622,6 +5057,7 @@ KH Laser 销售部
                             quantity: parseInt(historyQuote.quantity) || 1,
                             country: historyQuote.country || 'US',
                             zipCode: historyQuote.zipCode || '',
+                            selectedProvince: historyQuote.selectedProvince || '',
                             priceSource: historyQuote.priceSource || 'tier1',
                             timestamp: new Date().toISOString(),
                             selectedTemplateId: historyQuote.selectedTemplateId || null
@@ -4755,8 +5191,20 @@ KH Laser 销售部
                         this.getElement('country').value = 'US';
                         this.getElement('zipCode').value = '';
                         
+                        // 重置省份选择
+                        const provinceSelect = document.getElementById('provinceSelect');
+                        if (provinceSelect) {
+                            provinceSelect.value = '';
+                        }
+                        // 重置省份按钮状态
+                        document.querySelectorAll('[data-province]').forEach(btn => {
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-secondary');
+                            btn.classList.remove('active');
+                        });
+                        
                         // 清空其他配件选择
-                        DataModule.updateCurrentQuote({ selectedOtherAccessories: [] });
+                        DataModule.updateCurrentQuote({ selectedOtherAccessories: [], selectedProvince: '' });
                         
                         document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
                         const tier1Option = document.querySelector('.price-source-option[data-source="tier1"]');
@@ -4823,7 +5271,7 @@ KH Laser 销售部
                                     <td>¥${QuoteModule.formatPrice(wc.price)}</td>
                                     <td>¥${QuoteModule.formatPrice(wc.priceTier2 || wc.price)}</td>
                                     <td>¥${QuoteModule.formatPrice(wc.priceTier3 || wc.price)}</td>
-                                    <td><button class="button button--secondary button--small" onclick="KHQuoteSystem.UIModule.editProduct('${wc.id}')">编辑</button></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="KHQuoteSystem.UIModule.editProduct('${wc.id}')">编辑</button></td>
                                 </tr>`;
                             });
                             html += '</tbody></table>';
@@ -4840,7 +5288,7 @@ KH Laser 销售部
                                     <td>¥${QuoteModule.formatPrice(acc.price)}</td>
                                     <td>¥${QuoteModule.formatPrice(acc.priceTier2 || acc.price)}</td>
                                     <td>¥${QuoteModule.formatPrice(acc.priceTier3 || acc.price)}</td>
-                                    <td><button class="button button--secondary button--small" onclick="KHQuoteSystem.UIModule.editProduct('${acc.id}')">编辑</button></td>
+                                    <td><button class="btn btn-secondary btn-sm" onclick="KHQuoteSystem.UIModule.editProduct('${acc.id}')">编辑</button></td>
                                 </tr>`;
                             });
                             html += '</tbody></table>';
@@ -4947,7 +5395,7 @@ KH Laser 销售部
                                     </div>
                                     <div class="template-actions">
                                         <button class="btn btn-secondary btn-sm" onclick="KHQuoteSystem.UIModule.editTemplate('${template.id}')">编辑</button>
-                                        <button class="button button--danger button--small" onclick="KHQuoteSystem.UIModule.deleteTemplate('${template.id}')">删除</button>
+                                        <button class="btn btn-danger btn-sm" onclick="KHQuoteSystem.UIModule.deleteTemplate('${template.id}')">删除</button>
                                     </div>
                                 </div>
                             `;
@@ -4993,7 +5441,7 @@ KH Laser 销售部
                                     </div>
                                 </div>
                                 <div class="template-actions">
-                                    <button class="button button--primary button--small template-select-btn" data-template-id="${template.id}">选择</button>
+                                    <button class="btn btn-primary btn-sm template-select-btn" data-template-id="${template.id}">选择</button>
                                 </div>
                             `;
                             fragment.appendChild(item);
@@ -5269,6 +5717,70 @@ KH Laser 销售部
                                     console.error('更新邮编失败:', error);
                                 }
                             });
+                        }
+                        
+                        // 省份选择按钮
+                        document.querySelectorAll('[data-province]').forEach(button => {
+                            button.addEventListener('click', (e) => {
+                                try {
+                                    const province = e.target.dataset.province;
+                                    // 重置下拉框
+                                    document.getElementById('provinceSelect').value = '';
+                                    // 重置所有省份按钮状态
+                                    document.querySelectorAll('[data-province]').forEach(btn => {
+                                        btn.classList.remove('active');
+                                    });
+                                    // 设置当前按钮为选中状态
+                                    e.target.classList.add('active');
+                                    // 更新当前报价中的省份
+                                    DataModule.updateCurrentQuote({ selectedProvince: province });
+                                    // 计算并更新国内运费
+                                    updateDomesticShipping(province);
+                                } catch (error) {
+                                    console.error('选择省份失败:', error);
+                                }
+                            });
+                        });
+                        
+                        // 省份选择下拉框
+                        const provinceSelectElement = document.getElementById('provinceSelect');
+                        if (provinceSelectElement) {
+                            provinceSelectElement.addEventListener('change', (e) => {
+                                try {
+                                    const province = e.target.value;
+                                    if (province) {
+                                        // 重置按钮状态
+                                        document.querySelectorAll('[data-province]').forEach(btn => {
+                                            btn.classList.remove('btn-primary');
+                                            btn.classList.add('btn-secondary');
+                                            btn.classList.remove('active');
+                                        });
+                                        // 更新当前报价中的省份
+                                        DataModule.updateCurrentQuote({ selectedProvince: province });
+                                        // 计算并更新国内运费
+                                        updateDomesticShipping(province);
+                                    }
+                                } catch (error) {
+                                    console.error('选择省份失败:', error);
+                                }
+                            });
+                        }
+                        
+                        // 更新国内运费的函数
+                        function updateDomesticShipping(province) {
+                            try {
+                                const currentQuote = DataModule.getCurrentQuote();
+                                const machine = currentQuote.selectedMachine;
+                                if (machine && machine.cbm) {
+                                    const cbm = machine.cbm;
+                                    const shippingFee = QuoteModule.calculateDomesticShipping(cbm, province);
+                                    DataModule.updateCurrentQuote({ domesticShipping: shippingFee });
+                                    document.getElementById('domesticShipping').value = shippingFee;
+                                    UIModule.updateQuoteDisplay();
+                                }
+                            } catch (error) {
+                                console.error('更新国内运费失败:', error);
+                            }
                         }
                         
                         // 选择模板按钮
@@ -5841,7 +6353,509 @@ KH Laser 销售部
                 QuoteModule
             };
         })();
-        
+
+        // ==================== 新增：统一计算引擎模块 ====================
+        const CalculationEngine = (function() {
+            // 状态对象
+            const AppState = {
+                // 基础状态
+                machinePrice: 0,
+                accessoriesPrice: 0,
+                waterChillerPrice: 0,
+                otherPartsPrice: 0,
+                domesticShipping: 0,
+                internationalShipping: 0,
+                otherFee: 0,
+                quantity: 1,
+                province: '',
+                
+                // 衍生状态（只读）
+                subtotal: 0,
+                finalTotalCNY: 0,
+                finalTotalUSD: 0,
+                
+                // 更新方法
+                update(updates) {
+                    Object.assign(this, updates);
+                    this.recalculate();
+                },
+                
+                // 统一重新计算
+                recalculate() {
+                    try {
+                        // 第一层：计算各项费用
+                        this.subtotal = this.calculateSubtotal();
+                        
+                        // 第二层：计算最终总价
+                        const finalTotals = this.calculateFinalTotal();
+                        this.finalTotalCNY = finalTotals.cny;
+                        this.finalTotalUSD = finalTotals.usd;
+                        
+                        // 第三层：触发UI更新
+                        this.triggerUIUpdate();
+                        
+                        return this.getState();
+                    } catch (error) {
+                        console.error('统一计算失败:', error);
+                        return this.getState();
+                    }
+                },
+                
+                // 第一层：计算各项费用小计
+                calculateSubtotal() {
+                    return this.machinePrice +
+                           this.waterChillerPrice +
+                           this.accessoriesPrice +
+                           this.otherPartsPrice +
+                           this.domesticShipping +
+                           this.internationalShipping +
+                           this.otherFee;
+                },
+                
+                // 第二层：计算最终总价（考虑数量）
+                calculateFinalTotal() {
+                    const subtotal = this.calculateSubtotal();
+                    const totalCNY = subtotal * this.quantity;
+                    
+                    // 获取汇率
+                    const exchangeRate = KHQuoteSystem.DataModule.getExchangeRate();
+                    // 美元采用进一制
+                    const totalUSD = Math.ceil(totalCNY / exchangeRate);
+                    
+                    return {
+                        cny: totalCNY,
+                        usd: totalUSD,
+                        rawCNY: totalCNY,
+                        rawUSD: totalUSD
+                    };
+                },
+                
+                // 触发UI更新
+                triggerUIUpdate() {
+                    // 通知UI模块更新显示
+                    if (window.KHQuoteSystem && KHQuoteSystem.UIModule) {
+                        KHQuoteSystem.UIModule.updateQuoteDisplayFromState(this.getState());
+                    }
+                },
+                
+                // 获取完整状态
+                getState() {
+                    return {
+                        machinePrice: this.machinePrice,
+                        accessoriesPrice: this.accessoriesPrice,
+                        waterChillerPrice: this.waterChillerPrice,
+                        otherPartsPrice: this.otherPartsPrice,
+                        domesticShipping: this.domesticShipping,
+                        internationalShipping: this.internationalShipping,
+                        otherFee: this.otherFee,
+                        quantity: this.quantity,
+                        province: this.province,
+                        subtotal: this.subtotal,
+                        finalTotalCNY: this.finalTotalCNY,
+                        finalTotalUSD: this.finalTotalUSD
+                    };
+                },
+                
+                // 从DOM同步状态（备用方法）
+                syncFromDOM() {
+                    try {
+                        const updates = {
+                            quantity: parseInt(document.getElementById('quantity')?.value) || 1,
+                            internationalShipping: parseFloat(document.getElementById('internationalShipping')?.value) || 0,
+                            domesticShipping: parseFloat(document.getElementById('domesticShipping')?.value) || 0,
+                            otherFee: parseFloat(document.getElementById('otherFees')?.value) || 0
+                        };
+                        
+                        // 同步省份
+                        const provinceBtn = document.querySelector('.province-btn.active');
+                        const provinceSelect = document.getElementById('provinceSelect');
+                        if (provinceBtn) {
+                            updates.province = provinceBtn.dataset.province;
+                        } else if (provinceSelect && provinceSelect.value) {
+                            updates.province = provinceSelect.value;
+                        }
+                        
+                        this.update(updates);
+                    } catch (error) {
+                        console.error('从DOM同步状态失败:', error);
+                    }
+                },
+                
+                // 从DataModule同步机器和产品价格
+                syncFromDataModule() {
+                    try {
+                        const currentQuote = KHQuoteSystem.DataModule.getCurrentQuote();
+                        const products = KHQuoteSystem.DataModule.getProducts();
+                        const priceSource = currentQuote.priceSource || 'tier1';
+                        
+                        // 机器价格
+                        if (currentQuote.selectedMachine) {
+                            this.machinePrice = KHQuoteSystem.QuoteModule.getPriceByTier(
+                                currentQuote.selectedMachine, 
+                                priceSource
+                            );
+                        }
+                        
+                        // 水冷机价格
+                        if (currentQuote.selectedWaterCooler) {
+                            const waterCooler = products.waterCoolers.find(wc => wc.id === currentQuote.selectedWaterCooler);
+                            if (waterCooler) {
+                                this.waterChillerPrice = KHQuoteSystem.QuoteModule.getPriceByTier(waterCooler, priceSource);
+                            }
+                        }
+                        
+                        // 配件价格
+                        this.accessoriesPrice = 0;
+                        if (currentQuote.selectedAccessories && currentQuote.selectedAccessories.length > 0) {
+                            currentQuote.selectedAccessories.forEach(accId => {
+                                const accessory = products.accessories.find(acc => acc.id === accId);
+                                if (accessory) {
+                                    this.accessoriesPrice += KHQuoteSystem.QuoteModule.getPriceByTier(accessory, priceSource);
+                                }
+                            });
+                        }
+                        
+                        // 其他配件价格
+                        this.otherPartsPrice = 0;
+                        if (currentQuote.selectedOtherAccessories && currentQuote.selectedOtherAccessories.length > 0) {
+                            currentQuote.selectedOtherAccessories.forEach(oaccId => {
+                                const otherAccessory = products.otherAccessories.find(oacc => oacc.id === oaccId);
+                                if (otherAccessory) {
+                                    this.otherPartsPrice += KHQuoteSystem.QuoteModule.getPriceByTier(otherAccessory, priceSource);
+                                }
+                            });
+                        }
+                        
+                        this.recalculate();
+                    } catch (error) {
+                        console.error('从DataModule同步失败:', error);
+                    }
+                }
+            };
+            
+            // 统一重新计算函数（外部调用入口）
+            function recalculateAll() {
+                // 1. 从DataModule同步基础数据
+                AppState.syncFromDataModule();
+                
+                // 2. 从DOM同步用户输入
+                AppState.syncFromDOM();
+                
+                // 3. 特殊处理：计算国内运费（如果省份和机器信息存在）
+                if (AppState.province) {
+                    const currentQuote = KHQuoteSystem.DataModule.getCurrentQuote();
+                    if (currentQuote.selectedMachine && currentQuote.selectedMachine.cbm) {
+                        const domesticShipping = KHQuoteSystem.QuoteModule.calculateDomesticShipping(
+                            currentQuote.selectedMachine.cbm,
+                            AppState.province
+                        );
+                        AppState.update({ domesticShipping });
+                        
+                        // 更新DOM中的国内运费显示
+                        const domesticShippingInput = document.getElementById('domesticShipping');
+                        if (domesticShippingInput) {
+                            domesticShippingInput.value = domesticShipping;
+                        }
+                    }
+                }
+                
+                // 4. 触发完整重新计算
+                return AppState.recalculate();
+            }
+            
+            return {
+                AppState,
+                recalculateAll,
+                
+                // 便捷方法：更新特定字段并重新计算
+                updateAndRecalculate(updates) {
+                    AppState.update(updates);
+                    return AppState.getState();
+                },
+                
+                // 获取当前状态
+                getState() {
+                    return AppState.getState();
+                },
+                
+                // 重置状态
+                reset() {
+                    AppState.update({
+                        machinePrice: 0,
+                        accessoriesPrice: 0,
+                        waterChillerPrice: 0,
+                        otherPartsPrice: 0,
+                        domesticShipping: 0,
+                        internationalShipping: 0,
+                        otherFee: 0,
+                        quantity: 1,
+                        province: '',
+                        subtotal: 0,
+                        finalTotalCNY: 0,
+                        finalTotalUSD: 0
+                    });
+                    
+                    return AppState.getState();
+                }
+            };
+        })();
+
+        // ==================== 修改：UIModule 扩展 ====================
+        // 在UIModule中添加新方法
+        const originalUIModule = KHQuoteSystem.UIModule;
+
+        // 扩展UIModule
+        Object.assign(KHQuoteSystem.UIModule, {
+            // 新增：从状态对象更新UI
+            updateQuoteDisplayFromState(state) {
+                try {
+                    const cnyPrice = this.getElement('cnyPrice');
+                    const usdPrice = this.getElement('usdPrice');
+                    
+                    if (cnyPrice) cnyPrice.textContent = `¥${Utils.formatPrice(state.finalTotalCNY)}`;
+                    if (usdPrice) usdPrice.textContent = `$${Utils.formatPrice(state.finalTotalUSD)}`;
+                    
+                    // 更新费用明细显示
+                    this.updatePriceDetailsFromState(state);
+                    
+                    // 更新DataModule中的当前报价（保持向后兼容）
+                    KHQuoteSystem.DataModule.updateCurrentQuote({
+                        totalCNY: state.finalTotalCNY,
+                        totalUSD: state.finalTotalUSD
+                    });
+                    
+                } catch (error) {
+                    console.error('从状态更新UI失败:', error);
+                }
+            },
+            
+            // 新增：从状态更新费用明细
+            updatePriceDetailsFromState(state) {
+                try {
+                    const priceDetailMachine = this.getElement('priceDetailMachine');
+                    const priceDetailWaterCooler = this.getElement('priceDetailWaterCooler');
+                    const priceDetailAccessories = this.getElement('priceDetailAccessories');
+                    const priceDetailOtherAccessories = this.getElement('priceDetailOtherAccessories');
+                    const priceDetailInternationalShipping = this.getElement('priceDetailInternationalShipping');
+                    const priceDetailDomesticShipping = this.getElement('priceDetailDomesticShipping');
+                    const priceDetailOtherFees = this.getElement('priceDetailOtherFees');
+                    const priceDetailTotal = this.getElement('priceDetailTotal');
+                    
+                    if (priceDetailMachine) priceDetailMachine.textContent = `¥${Utils.formatPrice(state.machinePrice)}`;
+                    if (priceDetailWaterCooler) priceDetailWaterCooler.textContent = `¥${Utils.formatPrice(state.waterChillerPrice)}`;
+                    if (priceDetailAccessories) priceDetailAccessories.textContent = `¥${Utils.formatPrice(state.accessoriesPrice)}`;
+                    if (priceDetailOtherAccessories) priceDetailOtherAccessories.textContent = `¥${Utils.formatPrice(state.otherPartsPrice)}`;
+                    if (priceDetailInternationalShipping) priceDetailInternationalShipping.textContent = `¥${Utils.formatPrice(state.internationalShipping)}`;
+                    if (priceDetailDomesticShipping) priceDetailDomesticShipping.textContent = `¥${Utils.formatPrice(state.domesticShipping)}`;
+                    if (priceDetailOtherFees) priceDetailOtherFees.textContent = `¥${Utils.formatPrice(state.otherFee)}`;
+                    if (priceDetailTotal) priceDetailTotal.textContent = `¥${Utils.formatPrice(state.finalTotalCNY)}`;
+                    
+                } catch (error) {
+                    console.error('更新费用明细失败:', error);
+                }
+            }
+        });
+
+        // ==================== 修改：EventModule 统一事件处理 ====================
+        // 修改省份按钮事件（示例）
+        document.querySelectorAll('[data-province]').forEach(button => {
+            button.addEventListener('click', (e) => {
+                try {
+                    const province = e.target.dataset.province;
+                    
+                    // 重置下拉框
+                    document.getElementById('provinceSelect').value = '';
+                    
+                    // 重置所有省份按钮状态
+                    document.querySelectorAll('[data-province]').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // 设置当前按钮为选中状态
+                    e.target.classList.add('active');
+                    
+                    // 只更新状态，然后统一重新计算
+                    CalculationEngine.updateAndRecalculate({ province });
+                    
+                } catch (error) {
+                    console.error('省份选择失败:', error);
+                }
+            });
+        });
+
+        // 修改省份下拉框事件
+        const provinceSelectElement = document.getElementById('provinceSelect');
+        if (provinceSelectElement) {
+            provinceSelectElement.addEventListener('change', (e) => {
+                try {
+                    const province = e.target.value;
+                    if (province) {
+                        // 重置按钮状态
+                        document.querySelectorAll('[data-province]').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        
+                        // 只更新状态，然后统一重新计算
+                        CalculationEngine.updateAndRecalculate({ province });
+                    }
+                } catch (error) {
+                    console.error('省份选择失败:', error);
+                }
+            });
+        }
+
+        // 修改费用输入事件
+        ['internationalShipping', 'domesticShipping', 'otherFees', 'quantity'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', (e) => {
+                    try {
+                        const value = e.target.value;
+                        const fieldMap = {
+                            'internationalShipping': 'internationalShipping',
+                            'domesticShipping': 'domesticShipping',
+                            'otherFees': 'otherFee',
+                            'quantity': 'quantity'
+                        };
+                        
+                        const updates = {};
+                        updates[fieldMap[id]] = parseFloat(value) || (id === 'quantity' ? 1 : 0);
+                        
+                        // 只更新状态，然后统一重新计算
+                        CalculationEngine.updateAndRecalculate(updates);
+                        
+                    } catch (error) {
+                        console.error('更新费用失败:', error);
+                    }
+                });
+            }
+        });
+
+        // 修改机器选择事件（在原有事件处理中添加）
+        // 在系列选择变化事件中添加
+        const seriesSelect = document.getElementById('seriesSelect');
+        if (seriesSelect) {
+            const originalChangeHandler = seriesSelect.onchange;
+            seriesSelect.onchange = function(e) {
+                try {
+                    // 执行原有逻辑
+                    if (originalChangeHandler) originalChangeHandler.call(this, e);
+                    
+                    // 统一重新计算
+                    setTimeout(() => {
+                        CalculationEngine.recalculateAll();
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('处理系列选择失败:', error);
+                }
+            };
+        }
+
+        // 修改型号选择事件
+        const modelSelect = document.getElementById('modelSelect');
+        if (modelSelect) {
+            const originalChangeHandler = modelSelect.onchange;
+            modelSelect.onchange = function(e) {
+                try {
+                    // 执行原有逻辑
+                    if (originalChangeHandler) originalChangeHandler.call(this, e);
+                    
+                    // 统一重新计算
+                    setTimeout(() => {
+                        CalculationEngine.recalculateAll();
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('处理型号选择失败:', error);
+                }
+            };
+        }
+
+        // 修改功率选择事件
+        const powerSelect = document.getElementById('powerSelect');
+        if (powerSelect) {
+            const originalChangeHandler = powerSelect.onchange;
+            powerSelect.onchange = function(e) {
+                try {
+                    // 执行原有逻辑
+                    if (originalChangeHandler) originalChangeHandler.call(this, e);
+                    
+                    // 统一重新计算
+                    setTimeout(() => {
+                        CalculationEngine.recalculateAll();
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('处理功率选择失败:', error);
+                }
+            };
+        }
+
+        // 修改水冷机和配件选择事件
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('#waterCoolerOptions input[type="radio"], #accessoryOptions input[type="checkbox"], #otherAccessoryOptions input[type="checkbox"]')) {
+                try {
+                    // 统一重新计算
+                    setTimeout(() => {
+                        CalculationEngine.recalculateAll();
+                    }, 50);
+                } catch (error) {
+                    console.error('处理产品选择失败:', error);
+                }
+            }
+        });
+
+        // ==================== 修改：重置按钮使用统一计算 ====================
+        const resetCalculationBtn = document.getElementById('resetCalculation');
+        if (resetCalculationBtn) {
+            resetCalculationBtn.addEventListener('click', () => {
+                try {
+                    // 重置状态
+                    CalculationEngine.reset();
+                    
+                    // 执行原有重置逻辑（保持UI一致性）
+                    KHQuoteSystem.UIModule.resetForm();
+                    
+                    // 通知成功
+                    KHQuoteSystem.NotificationModule.showSuccess('已重置所有选项');
+                    
+                } catch (error) {
+                    console.error('重置计算失败:', error);
+                    KHQuoteSystem.NotificationModule.showError('重置失败');
+                }
+            });
+        }
+
+        // ==================== 修改：复制报价时使用统一计算 ====================
+        const copyQuoteBtn = document.getElementById('copyQuote');
+        if (copyQuoteBtn) {
+            const originalClickHandler = copyQuoteBtn.onclick;
+            copyQuoteBtn.onclick = function(e) {
+                try {
+                    // 确保状态是最新的
+                    CalculationEngine.recalculateAll();
+                    
+                    // 执行原有逻辑
+                    if (originalClickHandler) originalClickHandler.call(this, e);
+                    
+                } catch (error) {
+                    console.error('复制报价失败:', error);
+                    KHQuoteSystem.NotificationModule.showError('复制报价失败');
+                }
+            };
+        }
+
+        // ==================== 将计算引擎暴露给全局 ====================
+        window.CalculationEngine = CalculationEngine;
+
+        // 在KHQuoteSystem中暴露
+        if (window.KHQuoteSystem) {
+            KHQuoteSystem.CalculationEngine = CalculationEngine;
+        }
+
+        console.log('统一计算引擎已加载，使用 CalculationEngine.recalculateAll() 进行统一计算');
+
         // 全局错误处理
         window.addEventListener('error', (event) => {
             console.error('全局错误:', event.error);

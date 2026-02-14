@@ -1491,7 +1491,7 @@
                                     汇率设置 (1 USD = ? CNY)
                                 </h2>
                                 <div class="form-group">
-                                    <input type="number" id="exchangeRate" step="0.01" min="0" value="6.7">
+                                    <input type="number" id="exchangeRate" step="0.01" min="0" value="6.66">
                                 </div>
                             </div>
                             
@@ -1691,9 +1691,9 @@
                                 <option value="甘肃">甘肃</option>
                                 <option value="青海">青海</option>
                                 <option value="宁夏">宁夏</option>
-                                <option value="新疆">新疆</option>
-                                <option value="其他">其他</option>
+
                             </select>
+                            <input type="hidden" id="provinceValue" value="">
                         </div>
                     </div>
                     
@@ -2018,37 +2018,11 @@
     <div class="notification-container" id="notificationContainer"></div>
 
     <script>
+        // 调试开关常量
+        const DEBUG = false;
+        
         // ==================== 工具函数模块开始 ====================
         const Utils = {
-            // 价格格式化工具
-            formatPrice(price) {
-                try {
-                    return new Intl.NumberFormat('zh-CN', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(price);
-                } catch (error) {
-                    console.error('格式化价格失败:', error);
-                    return '0';
-                }
-            },
-            
-            // 按等级获取价格
-            getPriceByTier(product, priceSource) {
-                try {
-                    if (!product) return 0;
-                    switch (priceSource) {
-                        case 'tier1': return product.price || 0;
-                        case 'tier2': return product.priceTier2 || product.price || 0;
-                        case 'tier3': return product.priceTier3 || product.price || 0;
-                        default: return product.price || 0;
-                    }
-                } catch (error) {
-                    console.error('获取价格失败:', error);
-                    return 0;
-                }
-            },
-            
             // 解析数字
             parseNumber(value) {
                 try {
@@ -2086,15 +2060,15 @@
             // 获取默认价格结果
             getDefaultPriceResult() {
                 return {
-                    totalCNY: '0',
-                    totalUSD: '0',
+                    totalCNY: CalculationEngine.formatPrice(0),
+                    totalUSD: CalculationEngine.formatPrice(0),
                     rawCNY: 0,
                     rawUSD: 0,
-                    machinePrice: '0',
-                    waterCoolerPrice: '0',
-                    accessoriesPrice: '0',
-                    otherFeesPrice: '0',
-                    shippingTotal: '0',
+                    machinePrice: CalculationEngine.formatPrice(0),
+                    waterCoolerPrice: CalculationEngine.formatPrice(0),
+                    accessoriesPrice: CalculationEngine.formatPrice(0),
+                    otherFeesPrice: CalculationEngine.formatPrice(0),
+                    shippingTotal: CalculationEngine.formatPrice(0),
                     details: {
                         machinePrice: 0,
                         waterCoolerPrice: 0,
@@ -2402,16 +2376,6 @@
                     { min: 0.51, max: 1.5, price: 560 },
                     { min: 1.51, max: 4, price: 540 },
                     { min: 4.01, max: Infinity, price: 500 }
-                ]
-            },
-            '其他': {
-                firstWeightPrice: 40,
-                cbmRanges: [
-                    { min: 0, max: 0.1, price: 40 },
-                    { min: 0.11, max: 0.5, price: 280 },
-                    { min: 0.51, max: 1.5, price: 270 },
-                    { min: 1.51, max: 4, price: 260 },
-                    { min: 4.01, max: Infinity, price: 230 }
                 ]
             }
         };
@@ -3047,8 +3011,8 @@ KH Laser 销售部
                         });
                         return powers.sort((a, b) => {
                             // 优化排序：支持数字和单位的混合排序
-                            const aPower = this.extractNumberFromPowerString(a.power);
-                            const bPower = this.extractNumberFromPowerString(b.power);
+                            const aPower = Utils.extractNumberFromPowerString(a.power);
+                            const bPower = Utils.extractNumberFromPowerString(b.power);
                             return aPower - bPower;
                         });
                     } catch (error) {
@@ -3057,9 +3021,7 @@ KH Laser 销售部
                     }
                 },
                 
-                extractNumberFromPowerString(str) {
-                    return Utils.extractNumberFromPowerString(str);
-                },
+
                 
                 getMachineBySeriesModelPower(series, model, power) {
                     try {
@@ -3221,7 +3183,7 @@ KH Laser 销售部
                 saveCurrentQuoteToHistory() {
                     try {
                         // 使用深拷贝确保数据独立性
-                        const currentQuote = this.deepCopyCurrentQuote();
+                        const currentQuote = this.deepClone(this.data.currentQuote);
                         
                         // 生成历史记录ID
                         const historyId = `quote_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -3235,11 +3197,10 @@ KH Laser 销售部
                             selectedSeries: currentQuote.selectedSeries,
                             selectedModel: currentQuote.selectedModel,
                             selectedPower: currentQuote.selectedPower,
-                            selectedMachine: currentQuote.selectedMachine ? 
-                                this.deepClone(currentQuote.selectedMachine) : null,
+                            selectedMachine: currentQuote.selectedMachine,
                             selectedWaterCooler: currentQuote.selectedWaterCooler,
-                            selectedAccessories: [...(currentQuote.selectedAccessories || [])],
-                            selectedOtherAccessories: [...(currentQuote.selectedOtherAccessories || [])],
+                            selectedAccessories: currentQuote.selectedAccessories,
+                            selectedOtherAccessories: currentQuote.selectedOtherAccessories,
                             internationalShipping: currentQuote.internationalShipping,
                             domesticShipping: currentQuote.domesticShipping,
                             otherFees: currentQuote.otherFees,
@@ -3271,38 +3232,7 @@ KH Laser 销售部
                     }
                 },
                 
-                // 新增：深拷贝当前报价的方法
-                deepCopyCurrentQuote() {
-                    try {
-                        const currentQuote = this.data.currentQuote;
-                        
-                        // 对每个可能包含对象的字段进行深度克隆
-                        return {
-                            selectedSeries: currentQuote.selectedSeries,
-                            selectedModel: currentQuote.selectedModel,
-                            selectedPower: currentQuote.selectedPower,
-                            selectedMachine: this.deepClone(currentQuote.selectedMachine),
-                            selectedWaterCooler: currentQuote.selectedWaterCooler, // 字符串，不需要深拷贝
-                            selectedAccessories: this.deepClone(currentQuote.selectedAccessories),
-                            selectedOtherAccessories: this.deepClone(currentQuote.selectedOtherAccessories),
-                            internationalShipping: currentQuote.internationalShipping,
-                            domesticShipping: currentQuote.domesticShipping,
-                            otherFees: currentQuote.otherFees,
-                            quantity: currentQuote.quantity,
-                            country: currentQuote.country,
-                            zipCode: currentQuote.zipCode,
-                            priceSource: currentQuote.priceSource,
-                            totalCNY: currentQuote.totalCNY,
-                            totalUSD: currentQuote.totalUSD,
-                            timestamp: currentQuote.timestamp ? new Date(currentQuote.timestamp).toISOString() : null,
-                            selectedTemplateId: currentQuote.selectedTemplateId
-                        };
-                    } catch (error) {
-                        console.error('深拷贝报价失败:', error);
-                        // 回退方案：使用JSON序列化/反序列化
-                        return JSON.parse(JSON.stringify(this.data.currentQuote));
-                    }
-                },
+
                 
                 // 新增：清除所有历史记录
                 clearQuoteHistory() {
@@ -3479,6 +3409,36 @@ KH Laser 销售部
                 }
             };
             
+            // ==================== HistoryModule ====================
+            // 历史记录操作代理层，所有方法委托给 DataModule，保持数据源唯一
+            const HistoryModule = {
+                // 获取所有历史记录
+                getAll() {
+                    return DataModule.getQuoteHistory();
+                },
+
+                // 根据 ID 获取单条记录
+                getById(quoteId) {
+                    return DataModule.getQuoteHistoryById(quoteId);
+                },
+
+                // 保存当前报价到历史记录
+                saveCurrentQuote() {
+                    return DataModule.saveCurrentQuoteToHistory();
+                },
+
+                // 清除所有历史记录
+                clearAll() {
+                    return DataModule.clearQuoteHistory();
+                },
+
+                // 获取最近一条记录
+                getLatest() {
+                    const history = this.getAll();
+                    return history.length > 0 ? history[0] : null;
+                }
+            };
+            
             // ==================== NotificationModule ====================
             const NotificationModule = {
                 showNotification(title, message, type = 'info', duration = 3000) {
@@ -3561,132 +3521,12 @@ KH Laser 销售部
             
             // ==================== QuoteModule ====================
             const QuoteModule = {
-                // 统一价格计算和校验入口
-                getCalculatedQuote(quoteData, products, exchangeRate, priceSource) {
-                    try {
-                        // 统一价格输入校验
-                        this.validatePriceInputs(quoteData, exchangeRate);
-                        
-                        // 执行价格计算
-                        return this.calculateQuote(quoteData, products, exchangeRate, priceSource);
-                    } catch (error) {
-                        console.error('统一价格计算失败:', error);
-                        return this.getDefaultPriceResult();
-                    }
-                },
-                
-                // 价格输入校验
-                validatePriceInputs(quoteData, exchangeRate) {
-                    if (exchangeRate <= 0) {
-                        throw new Error('汇率必须大于0');
-                    }
-                    if (exchangeRate > 100) {
-                        throw new Error('汇率值异常，请检查');
-                    }
-                    
-                    const quantity = parseInt(quoteData.quantity) || 1;
-                    if (quantity <= 0) {
-                        throw new Error('数量必须大于0');
-                    }
-                    
-                    const shipping = parseFloat(quoteData.internationalShipping) || 0;
-                    if (shipping < 0) {
-                        throw new Error('运费不能为负数');
-                    }
-                },
-                
-                // 默认价格结果
-                getDefaultPriceResult() {
-                    return Utils.getDefaultPriceResult();
-                },
-                
-                // 计算报价（美元采用进一制）
-                calculateQuote(quoteData, products, exchangeRate, priceSource) {
-                    try {
-                        let totalCNY = 0;
-                        let machinePrice = 0;
-                        let waterCoolerPrice = 0;
-                        let accessoriesPrice = 0;
-                        let otherAccessoriesPrice = 0;
-                        let shippingTotal = 0;
-                        let otherFeesPrice = 0;
-                        
-                        if (quoteData.selectedMachine) {
-                            machinePrice = this.getPriceByTier(quoteData.selectedMachine, priceSource);
-                            totalCNY += machinePrice;
-                        }
-                        
-                        if (quoteData.selectedWaterCooler) {
-                            const waterCooler = products.waterCoolers.find(wc => wc.id === quoteData.selectedWaterCooler);
-                            if (waterCooler) {
-                                waterCoolerPrice = this.getPriceByTier(waterCooler, priceSource);
-                                totalCNY += waterCoolerPrice;
-                            }
-                        }
-                        
-                        quoteData.selectedAccessories.forEach(accessoryId => {
-                            const accessory = products.accessories.find(acc => acc.id === accessoryId);
-                            if (accessory) {
-                                const price = this.getPriceByTier(accessory, priceSource);
-                                accessoriesPrice += price;
-                                totalCNY += price;
-                            }
-                        });
-                        
-                        quoteData.selectedOtherAccessories.forEach(otherAccessoryId => {
-                            const otherAccessory = products.otherAccessories.find(oacc => oacc.id === otherAccessoryId);
-                            if (otherAccessory) {
-                                const price = this.getPriceByTier(otherAccessory, priceSource);
-                                otherAccessoriesPrice += price;
-                                totalCNY += price;
-                            }
-                        });
-                        
-                        const internationalShipping = parseFloat(quoteData.internationalShipping) || 0;
-                        const domesticShipping = parseFloat(quoteData.domesticShipping) || 0;
-                        const otherFees = parseFloat(quoteData.otherFees) || 0;
-                        
-                        shippingTotal = internationalShipping + domesticShipping;
-                        otherFeesPrice = otherFees;
-                        
-                        totalCNY += internationalShipping + domesticShipping + otherFees;
-                        totalCNY *= (parseInt(quoteData.quantity) || 1);
-                        
-                        // 美元报价采用进一制（向上取整）
-                        const totalUSD = Math.ceil(totalCNY / exchangeRate);
-                        
-                        return {
-                            totalCNY: this.formatPrice(totalCNY),
-                            totalUSD: this.formatPrice(totalUSD),
-                            rawCNY: totalCNY,
-                            rawUSD: totalUSD,
-                            machinePrice: this.formatPrice(machinePrice),
-                            waterCoolerPrice: this.formatPrice(waterCoolerPrice),
-                            accessoriesPrice: this.formatPrice(accessoriesPrice),
-                            otherAccessoriesPrice: this.formatPrice(otherAccessoriesPrice),
-                            otherFeesPrice: this.formatPrice(otherFeesPrice),
-                            shippingTotal: this.formatPrice(shippingTotal),
-                            details: {
-                                machinePrice,
-                                waterCoolerPrice,
-                                accessoriesPrice,
-                                otherAccessoriesPrice,
-                                otherFeesPrice,
-                                shippingTotal
-                            }
-                        };
-                    } catch (error) {
-                        console.error('计算报价失败:', error);
-                        return this.getDefaultPriceResult();
-                    }
-                },
-                
                 getPriceByTier(product, priceSource) {
-                    return Utils.getPriceByTier(product, priceSource);
+                    return CalculationEngine.getPriceByTier(product, priceSource);
                 },
 
                 formatPrice(price) {
-                    return Utils.formatPrice(price);
+                    return CalculationEngine.formatPrice(price);
                 },
                 
                 // 统一模板变量生成入口
@@ -3838,69 +3678,202 @@ KH Laser 销售部
                 },
                 
                 // 国内运费计算函数
-                calculateDomesticShipping(cbm, province) {
-                    try {
-                        // 青岛的特殊规则
-                        if (province === "青岛") {
-                            if (cbm <= 5) {
-                                return 500;
-                            } else {
-                                return Math.ceil(500 + (cbm - 5) * 110);
-                            }
-                        }
-                        
-                        // 其他省份的规则
-                        const provinceRule = DOMESTIC_SHIPPING_RULES[province] || DOMESTIC_SHIPPING_RULES['其他'];
-                        const firstWeightPrice = provinceRule.firstWeightPrice;
-                        
-                        // 找到对应的CBM区间单价
-                        let unitPrice = 0;
-                        let foundRange = false;
-                        
-                        for (const range of provinceRule.cbmRanges) {
-                            // 处理 Infinity 的情况
-                            if (range.max === Infinity) {
-                                if (cbm >= range.min) {
-                                    unitPrice = range.price;
-                                    foundRange = true;
-                                    break;
-                                }
-                            } else if (range.max) {
-                                if (cbm >= range.min && cbm <= range.max) {
-                                    unitPrice = range.price;
-                                    foundRange = true;
-                                    break;
-                                }
-                            } else {
-                                if (cbm >= range.min) {
-                                    unitPrice = range.price;
-                                    foundRange = true;
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        // 兜底逻辑：如果没有找到匹配的区间，使用最后一个区间的价格
-                        if (!foundRange && provinceRule.cbmRanges.length > 0) {
-                            const lastRange = provinceRule.cbmRanges[provinceRule.cbmRanges.length - 1];
-                            unitPrice = lastRange.price;
-                        }
-                        
-                        // 计算运费
-                        const shippingFee = (firstWeightPrice + cbm * unitPrice) * 1.07;
-                        // 进一制，返回整数
-                        return Math.ceil(shippingFee);
-                    } catch (error) {
-                        console.error('计算国内运费失败:', error);
-                        // 兜底逻辑：返回一个默认值
-                        return Math.ceil(30 + cbm * 200 * 1.07);
-                    }
-                },
+
                 
                 // 预留国际运费计算函数
                 calcInternationalShipping() {
                     // 本阶段不实现国际运费规则
                     return 0;
+                }
+            };
+            
+            // ==================== FormModule（纯 DOM 操作层）====================
+            const FormModule = {
+
+
+                /**
+                 * 清空所有表单选中状态（不修改数据层）
+                 * 用于重置或填充前清理
+                 */
+                clearFormSelections() {
+                    // 系列、型号、功率下拉框重置（通过事件触发）
+                    const seriesSelect = document.getElementById('seriesSelect');
+                    if (seriesSelect) {
+                        seriesSelect.value = '';
+                        seriesSelect.dispatchEvent(new Event('change'));
+                    }
+
+                    // 水冷机选项清除
+                    document.querySelectorAll('#waterCoolerOptions .radio-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+
+                    // 配件选项清除
+                    document.querySelectorAll('#accessoryOptions .checkbox-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+
+                    // 其他配件选项清除（需等待派生状态渲染，此处只清除现有 DOM）
+                    document.querySelectorAll('#otherAccessoryOptions .checkbox-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+
+                    // 费用输入框重置为默认值
+                    document.getElementById('internationalShipping').value = 0;
+                    document.getElementById('domesticShipping').value = 0;
+                    document.getElementById('otherFees').value = 0;
+                    document.getElementById('quantity').value = 1;
+                    document.getElementById('country').value = 'US';
+                    document.getElementById('zipCode').value = '';
+
+                    // 省份选择重置
+                    const provinceSelect = document.getElementById('provinceSelect');
+                    if (provinceSelect) provinceSelect.value = '';
+                    document.querySelectorAll('[data-province]').forEach(btn => {
+                        btn.classList.remove('active', 'btn-primary');
+                        btn.classList.add('btn-secondary');
+                    });
+
+                    // 价格来源重置为阶梯一
+                    document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
+                    const tier1Option = document.querySelector('.price-source-option[data-source="tier1"]');
+                    if (tier1Option) tier1Option.classList.add('active');
+
+                    // 隐藏机器信息
+                    const machineInfoDisplay = document.getElementById('machineInfoDisplay');
+                    if (machineInfoDisplay) machineInfoDisplay.style.display = 'none';
+
+                    // 清空其他配件搜索框
+                    const searchInput = document.getElementById('otherAccessoriesSearch');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        const clearBtn = document.getElementById('clearSearchBtn');
+                        if (clearBtn) clearBtn.style.display = 'none';
+                    }
+                },
+
+                /**
+                 * 根据报价数据填充表单（纯 DOM 填充）
+                 * @param {Object} quote 历史报价数据（来自 HistoryModule）
+                 */
+                populateForm(quote) {
+                    // 1. 设置系列/型号/功率（通过事件驱动，触发级联更新）
+                    if (quote.selectedSeries) {
+                        const seriesSelect = document.getElementById('seriesSelect');
+                        seriesSelect.value = quote.selectedSeries;
+                        seriesSelect.dispatchEvent(new Event('change'));
+
+                        if (quote.selectedModel) {
+                            const modelSelect = document.getElementById('modelSelect');
+                            modelSelect.value = quote.selectedModel;
+                            modelSelect.dispatchEvent(new Event('change'));
+
+                            if (quote.selectedPower) {
+                                const powerSelect = document.getElementById('powerSelect');
+                                powerSelect.value = quote.selectedPower;
+                                powerSelect.dispatchEvent(new Event('change'));
+                            }
+                        }
+                    }
+
+                    // 2. 设置水冷机（先清除同类选中状态，再设置当前）
+                    document.querySelectorAll('#waterCoolerOptions .radio-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+                    if (quote.selectedWaterCooler) {
+                        const waterCoolerOption = document.querySelector(`.radio-option[data-value="${quote.selectedWaterCooler}"]`);
+                        if (waterCoolerOption) {
+                            waterCoolerOption.classList.add('selected');
+                            waterCoolerOption.querySelector('input').checked = true;
+                        }
+                    }
+
+                    // 3. 设置配件（多选，仅设置当前选中的）
+                    document.querySelectorAll('#accessoryOptions .checkbox-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+                    if (quote.selectedAccessories && quote.selectedAccessories.length) {
+                        quote.selectedAccessories.forEach(accId => {
+                            const accessoryOption = document.querySelector(`.checkbox-option[data-value="${accId}"]`);
+                            if (accessoryOption) {
+                                accessoryOption.classList.add('selected');
+                                accessoryOption.querySelector('input').checked = true;
+                            }
+                        });
+                    }
+
+                    // 4. 设置其他配件（通过派生状态更新，此处仅设置 data 层？但 FormModule 不碰 DataModule，所以只更新 DOM 选中状态）
+                    // 注意：其他配件由派生状态管理，其渲染由 UIModule 负责。我们只更新 checkbox 状态，但需等待渲染完成
+                    // 由于派生状态可能异步更新，此处先清空选中标记，稍后由 Controller 触发派生状态更新后，会自动重新渲染。
+                    // 为了稳妥，我们可以先不做 DOM 操作，而是由 Controller 在填充后调用 UIModule.updateOtherAccessoriesDerivedState() 重新渲染。
+                    // 因此，这里不处理其他配件的 DOM 状态，留给 Controller 后续处理。
+
+                    // 5. 设置费用输入
+                    document.getElementById('internationalShipping').value = quote.internationalShipping || 0;
+                    document.getElementById('domesticShipping').value = quote.domesticShipping || 0;
+                    document.getElementById('otherFees').value = quote.otherFees || 0;
+                    document.getElementById('quantity').value = quote.quantity || 1;
+                    if (quote.country) document.getElementById('country').value = quote.country;
+                    if (quote.zipCode) document.getElementById('zipCode').value = quote.zipCode;
+
+                    // 6. 设置价格来源
+                    document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
+                    if (quote.priceSource) {
+                        const sourceOption = document.querySelector(`.price-source-option[data-source="${quote.priceSource}"]`);
+                        if (sourceOption) sourceOption.classList.add('active');
+                    } else {
+                        const tier1Option = document.querySelector('.price-source-option[data-source="tier1"]');
+                        if (tier1Option) tier1Option.classList.add('active');
+                    }
+
+                    // 7. 设置省份选择（按钮或下拉框）
+                    if (quote.selectedProvince) {
+                        // 尝试匹配按钮
+                        const provinceBtn = document.querySelector(`[data-province="${quote.selectedProvince}"]`);
+                        if (provinceBtn) {
+                            document.querySelectorAll('[data-province]').forEach(btn => {
+                                btn.classList.remove('active', 'btn-primary');
+                                btn.classList.add('btn-secondary');
+                            });
+                            provinceBtn.classList.add('active', 'btn-primary');
+                            provinceBtn.classList.remove('btn-secondary');
+                        } else {
+                            // 匹配下拉框
+                            const provinceSelect = document.getElementById('provinceSelect');
+                            if (provinceSelect) {
+                                provinceSelect.value = quote.selectedProvince;
+                            }
+                        }
+                    }
+
+                    // 注意：不在这里设置模板，由 Controller 后续调用 DataModule.selectTemplate
+                },
+
+                /**
+                 * 从表单收集当前数据（用于更新 DataModule）
+                 * @returns {Object} 表单数据对象
+                 */
+                collectFormData() {
+                    return {
+                        selectedWaterCooler: document.querySelector('input[name="waterCooler"]:checked')?.value || null,
+                        selectedAccessories: Array.from(document.querySelectorAll('#accessoryOptions input[type="checkbox"]:checked')).map(cb => cb.value),
+                        internationalShipping: parseFloat(document.getElementById('internationalShipping').value) || 0,
+                        domesticShipping: parseFloat(document.getElementById('domesticShipping').value) || 0,
+                        otherFees: parseFloat(document.getElementById('otherFees').value) || 0,
+                        quantity: parseInt(document.getElementById('quantity').value) || 1,
+                        country: document.getElementById('country').value,
+                        zipCode: document.getElementById('zipCode').value,
+                        selectedProvince: document.getElementById('provinceValue').value,
+                        priceSource: (() => {
+                            const activeSource = document.querySelector('.price-source-option.active');
+                            return activeSource ? activeSource.dataset.source : 'tier1';
+                        })()
+                    };
                 }
             };
             
@@ -3950,7 +3923,7 @@ KH Laser 销售部
                             productDataTable: document.getElementById('productDataTable'),
                             templateList: document.getElementById('templateList'),
                             templateSelectList: document.getElementById('templateSelectList'),
-                            historyCounter: document.getElementById('historyCounter'),
+
                             clearHistoryBtn: document.getElementById('clearHistoryBtn'),
                             otherAccessoriesSearch: document.getElementById('otherAccessoriesSearch'),
                             clearSearchBtn: document.getElementById('clearSearchBtn'),
@@ -3982,24 +3955,25 @@ KH Laser 销售部
                 
                 initUI() {
                     try {
-                        this.initCache();
-                        // 重要：加载本地存储但不恢复currentQuote
-                        DataModule.loadFromLocalStorage();
-                        // 初始化全新currentQuote
-                        this.initNewCurrentQuote();
-                        this.initExchangeRate();
-                        this.initMachineSelection();
-                        this.initProductOptions();
-                        this.updateQuoteDisplay();
-                        this.updateHistoryDisplay();
-                        this.updateSettingsStats();
-                        this.initCollapseEvents();
-                        this.updateSelectedTemplateDisplay();
-                        this.initOtherAccessoriesSearch();
-                        this.initHistoryPanel();
+                      this.initCache();
+                      // 重要：加载本地存储但不恢复currentQuote
+                      DataModule.loadFromLocalStorage();
+                      // 初始化全新currentQuote
+                      this.initNewCurrentQuote();
+                      this.initExchangeRate();
+                      this.initMachineSelection();
+                      this.initProductOptions();
+                      CalculationEngine.recalculateAll();
+                      KHQuoteSystem.UIModule.renderAll(); // 新增
+                      this.updateHistoryDisplay();
+                      this.updateSettingsStats();
+                      this.initCollapseEvents();
+                      this.updateSelectedTemplateDisplay();
+                      this.initOtherAccessoriesSearch();
+                      this.initHistoryPanel();
                     } catch (error) {
-                        console.error('初始化UI失败:', error);
-                        NotificationModule.showError('初始化界面失败，请刷新页面重试');
+                      console.error('初始化UI失败:', error);
+                      NotificationModule.showError('初始化界面失败，请刷新页面重试');
                     }
                 },
                 
@@ -4127,7 +4101,8 @@ KH Laser 销售部
                                     selectedPower: '',
                                     selectedMachine: null
                                 });
-                                this.updateQuoteDisplay();
+                                CalculationEngine.recalculateAll();
+                                KHQuoteSystem.UIModule.renderAll(); // 新增
                             } catch (error) {
                                 console.error('处理系列选择变更失败:', error);
                                 NotificationModule.showError('处理选择失败');
@@ -4180,7 +4155,8 @@ KH Laser 销售部
                                     selectedPower: '',
                                     selectedMachine: null
                                 });
-                                this.updateQuoteDisplay();
+                                CalculationEngine.recalculateAll();
+                                KHQuoteSystem.UIModule.renderAll(); // 新增
                             } catch (error) {
                                 console.error('处理型号选择变更失败:', error);
                                 NotificationModule.showError('处理选择失败');
@@ -4212,7 +4188,8 @@ KH Laser 销售部
                                     this.hideMachineInfo();
                                 }
                                 
-                                this.updateQuoteDisplay();
+                                CalculationEngine.recalculateAll();
+                                KHQuoteSystem.UIModule.renderAll(); // 新增
                             } catch (error) {
                                 console.error('处理功率选择变更失败:', error);
                                 NotificationModule.showError('处理选择失败');
@@ -4250,6 +4227,7 @@ KH Laser 销售部
                     }
                 },
                 
+                // 内部方法，用于更新所有产品价格标签
                 updateAllProductPrices() {
                     try {
                         const currentQuote = DataModule.getCurrentQuote();
@@ -4262,7 +4240,7 @@ KH Laser 销售部
                             const waterCoolerId = option.dataset.value;
                             const waterCooler = products.waterCoolers.find(wc => wc.id === waterCoolerId);
                             if (waterCooler) {
-                                const price = QuoteModule.getPriceByTier(waterCooler, priceSource);
+                                const price = window.CalculationEngine.getUnitPriceById('waterCooler', waterCoolerId);
                                 const label = option.querySelector('label');
                                 const name = waterCooler.name;
                                 if (label) {
@@ -4277,7 +4255,7 @@ KH Laser 销售部
                             const accessoryId = option.dataset.value;
                             const accessory = products.accessories.find(acc => acc.id === accessoryId);
                             if (accessory) {
-                                const price = QuoteModule.getPriceByTier(accessory, priceSource);
+                                const price = window.CalculationEngine.getUnitPriceById('accessory', accessoryId);
                                 const label = option.querySelector('label');
                                 const name = accessory.name;
                                 if (label) {
@@ -4287,7 +4265,7 @@ KH Laser 销售部
                         });
                         
                         // 批量更新其他配件价格显示（通过新的派生状态管理）
-                        this.updateOtherAccessoriesDerivedState();
+                        // this.updateOtherAccessoriesDerivedState(); // 已移至 renderAll 方法
                         
                         // 更新功率下拉框价格显示
                         const modelSelect = this.getElement('modelSelect');
@@ -4308,7 +4286,7 @@ KH Laser 销售部
                             powers.forEach(powerData => {
                                 const option = document.createElement('option');
                                 option.value = powerData.power;
-                                const price = QuoteModule.getPriceByTier(powerData, priceSource);
+                                const price = window.CalculationEngine.getUnitPriceById('machine', powerData);
                                 option.textContent = `${powerData.power} (¥${QuoteModule.formatPrice(price)})`;
                                 option.dataset.powerData = JSON.stringify(powerData);
                                 fragment.appendChild(option);
@@ -4338,7 +4316,7 @@ KH Laser 销售部
                             const fragment = document.createDocumentFragment();
                             
                             products.waterCoolers.forEach(wc => {
-                                const price = QuoteModule.getPriceByTier(wc, priceSource);
+                                const price = window.CalculationEngine.getUnitPriceById('waterCooler', wc.id);
                                 const option = document.createElement('div');
                                 option.className = 'radio-option';
                                 option.dataset.value = wc.id;
@@ -4362,7 +4340,7 @@ KH Laser 销售部
                             const fragment = document.createDocumentFragment();
                             
                             products.accessories.forEach(acc => {
-                                const price = QuoteModule.getPriceByTier(acc, priceSource);
+                                const price = window.CalculationEngine.getUnitPriceById('accessory', acc.id);
                                 const option = document.createElement('div');
                                 option.className = 'checkbox-option';
                                 option.dataset.value = acc.id;
@@ -4404,8 +4382,7 @@ KH Laser 销售部
                     }
                 },
                 
-                // 更新其他配件派生状态 - 修复版本
-                // 更新其他配件派生状态 - 修复版本（已选配件始终显示）
+                // 内部方法，用于更新其他配件派生状态
                 updateOtherAccessoriesDerivedState() {
                     try {
                         const currentQuote = DataModule.getCurrentQuote();
@@ -4504,7 +4481,7 @@ KH Laser 销售部
                     }
                 },
                 
-                // 从派生状态渲染UI - 修复版本
+                // 内部方法，用于从派生状态渲染其他配件
                 renderOtherAccessoriesFromDerivedState() {
                     try {
                         const container = this.getElement('otherAccessoryOptions');
@@ -4567,7 +4544,7 @@ KH Laser 销售部
                         sortedData.forEach(accessory => {
                             const isSelected = selectedIds.has(accessory.id);
                             const isMatched = searchText ? accessory.name.toLowerCase().includes(searchText) : true;
-                            const price = QuoteModule.getPriceByTier(accessory, priceSource);
+                            const price = window.CalculationEngine.getUnitPriceById('otherAccessory', accessory.id);
                             
                             // 添加分组标题
                             if (isSelected && !hasSelectedTitle && selectedCount > 0) {
@@ -4682,7 +4659,7 @@ KH Laser 销售部
                     }
                 },
                 
-                // 绑定其他配件事件
+                // 内部方法，用于绑定其他配件事件
                 bindOtherAccessoriesEvents() {
                     try {
                         const container = this.getElement('otherAccessoryOptions');
@@ -4709,7 +4686,7 @@ KH Laser 销售部
                     }
                 },
                 
-                // 处理其他配件点击
+                // 内部方法，处理其他配件点击
                 handleOtherAccessoryClick(option) {
                     try {
                         const checkbox = option.querySelector('input[type="checkbox"]');
@@ -4739,8 +4716,9 @@ KH Laser 销售部
                         });
                         
                         // 重要：更新派生状态（会重新计算和渲染）
-                        this.updateOtherAccessoriesDerivedState();
-                        this.updateQuoteDisplay();
+                        // this.updateOtherAccessoriesDerivedState(); // 删除，renderAll 内部已调用
+                        CalculationEngine.recalculateAll();
+                        KHQuoteSystem.UIModule.renderAll(); // 新增
                     } catch (error) {
                         console.error('更新其他配件选择失败:', error);
                     }
@@ -4762,7 +4740,7 @@ KH Laser 销售部
                                     if (checkbox) {
                                         checkbox.checked = !checkbox.checked;
                                         option.classList.toggle('selected');
-                                        this.updateQuoteFromForm();
+                                        KHQuoteSystem.QuoteController.handleFormChange();
                                     }
                                 } else {
                                     const radio = option.querySelector('input[type="radio"]');
@@ -4770,7 +4748,7 @@ KH Laser 销售部
                                         radio.checked = true;
                                         document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
                                         option.classList.add('selected');
-                                        this.updateQuoteFromForm();
+                                        KHQuoteSystem.QuoteController.handleFormChange();
                                     }
                                 }
                             } catch (error) {
@@ -4829,69 +4807,9 @@ KH Laser 销售部
                     }
                 },
                 
-                updateQuoteDisplay() {
-                    try {
-                        const currentQuote = DataModule.getCurrentQuote();
-                        const products = DataModule.getProducts();
-                        const exchangeRate = DataModule.getExchangeRate();
-                        const priceSource = currentQuote.priceSource;
-                        
-                        // 使用统一的价格计算入口
-                        const calculated = QuoteModule.getCalculatedQuote(currentQuote, products, exchangeRate, priceSource);
-                        
-                        const cnyPrice = this.getElement('cnyPrice');
-                        const usdPrice = this.getElement('usdPrice');
-                        
-                        if (cnyPrice) cnyPrice.textContent = `¥${calculated.totalCNY}`;
-                        if (usdPrice) usdPrice.textContent = `$${calculated.totalUSD}`;
-                        
-                        // 更新费用明细显示
-                        this.updatePriceDetailsDisplay(calculated);
-                        
-                        DataModule.updateCurrentQuote({
-                            totalCNY: calculated.rawCNY,
-                            totalUSD: calculated.rawUSD
-                        });
-                        
-                        // 更新选中的模板显示
-                        this.updateSelectedTemplateDisplay();
-                    } catch (error) {
-                        console.error('更新报价显示失败:', error);
-                    }
-                },
+
                 
-                // 新增：更新费用明细显示
-                updatePriceDetailsDisplay(calculated) {
-                    try {
-                        const priceDetailMachine = this.getElement('priceDetailMachine');
-                        const priceDetailWaterCooler = this.getElement('priceDetailWaterCooler');
-                        const priceDetailAccessories = this.getElement('priceDetailAccessories');
-                        const priceDetailOtherAccessories = this.getElement('priceDetailOtherAccessories');
-                        const priceDetailInternationalShipping = this.getElement('priceDetailInternationalShipping');
-                        const priceDetailDomesticShipping = this.getElement('priceDetailDomesticShipping');
-                        const priceDetailOtherFees = this.getElement('priceDetailOtherFees');
-                        const priceDetailTotal = this.getElement('priceDetailTotal');
-                        
-                        if (priceDetailMachine) priceDetailMachine.textContent = `¥${calculated.machinePrice}`;
-                        if (priceDetailWaterCooler) priceDetailWaterCooler.textContent = `¥${calculated.waterCoolerPrice}`;
-                        if (priceDetailAccessories) priceDetailAccessories.textContent = `¥${calculated.accessoriesPrice}`;
-                        if (priceDetailOtherAccessories) priceDetailOtherAccessories.textContent = `¥${calculated.otherAccessoriesPrice}`;
-                        
-                        // 获取运费和其他费用
-                        const currentQuote = DataModule.getCurrentQuote();
-                        const internationalShipping = Utils.parseNumber(currentQuote.internationalShipping);
-                        const domesticShipping = Utils.parseNumber(currentQuote.domesticShipping);
-                        const otherFees = Utils.parseNumber(currentQuote.otherFees);
-                        
-                        if (priceDetailInternationalShipping) priceDetailInternationalShipping.textContent = `¥${Utils.formatPrice(internationalShipping)}`;
-                        if (priceDetailDomesticShipping) priceDetailDomesticShipping.textContent = `¥${Utils.formatPrice(domesticShipping)}`;
-                        if (priceDetailOtherFees) priceDetailOtherFees.textContent = `¥${Utils.formatPrice(otherFees)}`;
-                        if (priceDetailTotal) priceDetailTotal.textContent = `¥${calculated.totalCNY}`;
-                    } catch (error) {
-                        console.error('更新费用明细显示失败:', error);
-                    }
-                },
-                
+                // 内部方法，用于更新模板预览
                 updateSelectedTemplateDisplay() {
                     try {
                         const selectedTemplate = DataModule.getSelectedTemplate();
@@ -4906,7 +4824,7 @@ KH Laser 销售部
                             const priceSource = currentQuote.priceSource;
                             
                             // 使用统一的价格计算入口
-                            const calculated = QuoteModule.getCalculatedQuote(currentQuote, products, exchangeRate, priceSource);
+                            const calculated = CalculationEngine.calculateFullQuote(currentQuote, products, exchangeRate, priceSource);
                             
                             const filledContent = QuoteModule.generateTemplateContent(
                                 selectedTemplate, 
@@ -4929,41 +4847,16 @@ KH Laser 销售部
                     }
                 },
                 
-                updateQuoteFromForm() {
-                    try {
-                        const selectedWaterCooler = document.querySelector('input[name="waterCooler"]:checked');
-                        const selectedAccessories = Array.from(document.querySelectorAll('#accessoryOptions input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
-                        
-                        DataModule.updateCurrentQuote({
-                            selectedWaterCooler: selectedWaterCooler ? selectedWaterCooler.value : null,
-                            selectedAccessories: selectedAccessories,
-                            internationalShipping: parseFloat(this.getElement('internationalShipping').value) || 0,
-                            domesticShipping: parseFloat(this.getElement('domesticShipping').value) || 0,
-                            otherFees: parseFloat(this.getElement('otherFees').value) || 0,
-                            quantity: parseInt(this.getElement('quantity').value) || 1,
-                            country: this.getElement('country').value,
-                            zipCode: this.getElement('zipCode').value
-                        });
-                        
-                        this.updateQuoteDisplay();
-                    } catch (error) {
-                        console.error('从表单更新报价失败:', error);
-                    }
-                },
+
                 
+                // 内部方法，用于更新历史记录列表
                 updateHistoryDisplay() {
                     try {
-                        const history = DataModule.getQuoteHistory();
+                        const history = HistoryModule.getAll();
                         const container = this.getElement('historyList');
-                        const historyCounter = this.getElement('historyCounter');
                         const maxHistoryItems = DataModule.getMaxHistoryItems();
                         
                         if (!container) return;
-                        
-                        // 更新历史记录计数器
-                        if (historyCounter) {
-                            historyCounter.textContent = `${history.length}/${maxHistoryItems}`;
-                        }
                         
                         if (history.length === 0) {
                             container.innerHTML = `
@@ -5015,217 +4908,71 @@ KH Laser 销售部
                 
                 // 新增：选择历史记录项
                 selectHistoryItem(quoteId) {
-                    try {
-                        const quote = DataModule.getQuoteHistoryById(quoteId);
-                        if (!quote) {
-                            NotificationModule.showWarning('未找到该历史报价记录');
-                            return;
-                        }
-                        
-                        // 更新选中的历史记录ID
-                        this.selectedHistoryItemId = quoteId;
-                        
-                        // 重新加载历史记录显示以更新选中状态
-                        this.updateHistoryDisplay();
-                        
-                        // 加载报价到表单
-                        this.loadQuoteIntoForm(quote);
-                        
-                        NotificationModule.showSuccess('历史报价已加载到表单');
-                    } catch (error) {
-                        console.error('选择历史记录项失败:', error);
-                        NotificationModule.showError('加载历史报价失败');
-                    }
+                    window.QuoteController.loadHistoryQuote(quoteId);
                 },
                 
-                // 恢复历史记录时避免整体替换，使用安全的逐项更新
-                restoreQuoteFromHistory(historyQuote) {
-                    try {
-                        // 使用DataModule的公开setter方法逐项更新
-                        const updates = {
-                            selectedSeries: historyQuote.selectedSeries || '',
-                            selectedModel: historyQuote.selectedModel || '',
-                            selectedPower: historyQuote.selectedPower || '',
-                            selectedMachine: historyQuote.selectedMachine ? 
-                                DataModule.deepClone(historyQuote.selectedMachine) : null,
-                            selectedWaterCooler: historyQuote.selectedWaterCooler || null,
-                            selectedAccessories: [...(historyQuote.selectedAccessories || [])],
-                            selectedOtherAccessories: [...(historyQuote.selectedOtherAccessories || [])],
-                            internationalShipping: parseFloat(historyQuote.internationalShipping) || 0,
-                            domesticShipping: parseFloat(historyQuote.domesticShipping) || 0,
-                            otherFees: parseFloat(historyQuote.otherFees) || 0,
-                            quantity: parseInt(historyQuote.quantity) || 1,
-                            country: historyQuote.country || 'US',
-                            zipCode: historyQuote.zipCode || '',
-                            selectedProvince: historyQuote.selectedProvince || '',
-                            priceSource: historyQuote.priceSource || 'tier1',
-                            timestamp: new Date().toISOString(),
-                            selectedTemplateId: historyQuote.selectedTemplateId || null
-                        };
-                        
-                        // 更新totalCNY和totalUSD通过calculateQuote重新计算，而不是直接恢复
-                        const products = DataModule.getProducts();
-                        const exchangeRate = DataModule.getExchangeRate();
-                        const calculated = QuoteModule.getCalculatedQuote(updates, products, exchangeRate, updates.priceSource);
-                        
-                        updates.totalCNY = calculated.rawCNY;
-                        updates.totalUSD = calculated.rawUSD;
-                        
-                        // 通过公开接口更新
-                        DataModule.updateCurrentQuote(updates);
-                        return true;
-                    } catch (error) {
-                        console.error('恢复历史报价失败:', error);
-                        return false;
-                    }
-                },
+
                 
-                loadQuoteIntoForm(quote) {
-                    try {
-                        this.resetForm();
-                        
-                        if (quote.selectedSeries) {
-                            const seriesSelect = this.getElement('seriesSelect');
-                            seriesSelect.value = quote.selectedSeries;
-                            seriesSelect.dispatchEvent(new Event('change'));
-                            
-                            // 使用Promise避免嵌套setTimeout
-                            setTimeout(() => {
-                                try {
-                                    if (quote.selectedModel) {
-                                        const modelSelect = this.getElement('modelSelect');
-                                        modelSelect.value = quote.selectedModel;
-                                        modelSelect.dispatchEvent(new Event('change'));
-                                        
-                                        setTimeout(() => {
-                                            try {
-                                                if (quote.selectedPower) {
-                                                    const powerSelect = this.getElement('powerSelect');
-                                                    powerSelect.value = quote.selectedPower;
-                                                    powerSelect.dispatchEvent(new Event('change'));
-                                                }
-                                            } catch (error) {
-                                                console.error('加载功率失败:', error);
-                                            }
-                                        }, 100);
-                                    }
-                                } catch (error) {
-                                    console.error('加载型号失败:', error);
-                                }
-                            }, 100);
-                        }
-                        
-                        if (quote.selectedWaterCooler) {
-                            const waterCoolerOption = document.querySelector(`.radio-option[data-value="${quote.selectedWaterCooler}"]`);
-                            if (waterCoolerOption) {
-                                waterCoolerOption.classList.add('selected');
-                                waterCoolerOption.querySelector('input').checked = true;
-                            }
-                        }
-                        
-                        quote.selectedAccessories.forEach(accId => {
-                            const accessoryOption = document.querySelector(`.checkbox-option[data-value="${accId}"]`);
-                            if (accessoryOption) {
-                                accessoryOption.classList.add('selected');
-                                accessoryOption.querySelector('input').checked = true;
-                            }
-                        });
-                        
-                        // 加载其他配件（通过更新派生状态）
-                        if (quote.selectedOtherAccessories && quote.selectedOtherAccessories.length > 0) {
-                            DataModule.updateCurrentQuote({
-                                selectedOtherAccessories: [...quote.selectedOtherAccessories]
-                            });
-                        }
-                        
-                        this.getElement('internationalShipping').value = quote.internationalShipping || 0;
-                        this.getElement('domesticShipping').value = quote.domesticShipping || 0;
-                        this.getElement('otherFees').value = quote.otherFees || 0;
-                        this.getElement('quantity').value = quote.quantity || 1;
-                        
-                        if (quote.country) this.getElement('country').value = quote.country;
-                        if (quote.zipCode) this.getElement('zipCode').value = quote.zipCode;
-                        
-                        document.querySelectorAll('.price-source-option').forEach(opt => {
-                            opt.classList.remove('active');
-                            if (opt.dataset.source === quote.priceSource) opt.classList.add('active');
-                        });
-                        
-                        if (quote.selectedTemplateId) {
-                            DataModule.selectTemplate(quote.selectedTemplateId);
-                        }
-                        
-                        // 使用新的恢复方法，避免整体替换
-                        this.restoreQuoteFromHistory(quote);
-                        this.updateAllProductPrices();
-                        this.updateQuoteDisplay();
-                        
-                        // 更新其他配件派生状态（会重新计算和渲染）
-                        this.updateOtherAccessoriesDerivedState();
-                    } catch (error) {
-                        console.error('加载报价到表单失败:', error);
-                        NotificationModule.showError('加载报价失败');
-                    }
+
+                
+                // 纯 DOM 重置，不涉及数据状态
+                _resetFormDOM() {
+                    const seriesSelect = this.getElement('seriesSelect');
+                    seriesSelect.value = '';
+                    seriesSelect.dispatchEvent(new Event('change'));
+
+                    document.querySelectorAll('.radio-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+                    document.querySelectorAll('.checkbox-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('input').checked = false;
+                    });
+
+                    this.getElement('internationalShipping').value = 0;
+                    this.getElement('domesticShipping').value = 0;
+                    this.getElement('otherFees').value = 0;
+                    this.getElement('quantity').value = 1;
+                    this.getElement('country').value = 'US';
+                    this.getElement('zipCode').value = '';
+
+                    const provinceSelect = document.getElementById('provinceSelect');
+                    if (provinceSelect) provinceSelect.value = '';
+                    document.querySelectorAll('[data-province]').forEach(btn => {
+                        btn.classList.remove('btn-primary', 'active');
+                        btn.classList.add('btn-secondary');
+                    });
+                    
+                    // 清空隐藏省份输入框
+                    document.getElementById('provinceValue').value = '';
+
+                    document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
+                    const tier1Option = document.querySelector('.price-source-option[data-source="tier1"]');
+                    if (tier1Option) tier1Option.classList.add('active');
+
+                    const searchInput = this.getElement('otherAccessoriesSearch');
+                    if (searchInput) searchInput.value = '';
+                    const clearBtn = this.getElement('clearSearchBtn');
+                    if (clearBtn) clearBtn.style.display = 'none';
+
+                    this.hideMachineInfo();
                 },
                 
                 resetForm() {
                     try {
-                        const seriesSelect = this.getElement('seriesSelect');
-                        seriesSelect.value = '';
-                        seriesSelect.dispatchEvent(new Event('change'));
+                        this._resetFormDOM();
                         
-                        document.querySelectorAll('.radio-option').forEach(opt => {
-                            opt.classList.remove('selected');
-                            opt.querySelector('input').checked = false;
+                        // 数据重置
+                        DataModule.updateCurrentQuote({
+                            selectedOtherAccessories: [],
+                            selectedProvince: '',
+                            selectedTemplateId: null
                         });
                         
-                        document.querySelectorAll('.checkbox-option').forEach(opt => {
-                            opt.classList.remove('selected');
-                            opt.querySelector('input').checked = false;
-                        });
-                        
-                        this.getElement('internationalShipping').value = 0;
-                        this.getElement('domesticShipping').value = 0;
-                        this.getElement('otherFees').value = 0;
-                        this.getElement('quantity').value = 1;
-                        this.getElement('country').value = 'US';
-                        this.getElement('zipCode').value = '';
-                        
-                        // 重置省份选择
-                        const provinceSelect = document.getElementById('provinceSelect');
-                        if (provinceSelect) {
-                            provinceSelect.value = '';
-                        }
-                        // 重置省份按钮状态
-                        document.querySelectorAll('[data-province]').forEach(btn => {
-                            btn.classList.remove('btn-primary');
-                            btn.classList.add('btn-secondary');
-                            btn.classList.remove('active');
-                        });
-                        
-                        // 清空其他配件选择
-                        DataModule.updateCurrentQuote({ selectedOtherAccessories: [], selectedProvince: '' });
-                        
-                        document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
-                        const tier1Option = document.querySelector('.price-source-option[data-source="tier1"]');
-                        if (tier1Option) tier1Option.classList.add('active');
-                        
-                        DataModule.updateCurrentQuote({ selectedTemplateId: null });
-                        
-                        // 清空搜索
-                        const searchInput = this.getElement('otherAccessoriesSearch');
-                        if (searchInput) {
-                            searchInput.value = '';
-                            this.otherAccessoriesDerivedState.searchText = '';
-                        }
-                        const clearBtn = this.getElement('clearSearchBtn');
-                        if (clearBtn) clearBtn.style.display = 'none';
-                        
-                        this.hideMachineInfo();
-                        this.updateSelectedTemplateDisplay();
-                        
-                        // 更新其他配件派生状态（会重新计算和渲染）
+                        this.otherAccessoriesDerivedState.searchText = '';
                         this.updateOtherAccessoriesDerivedState();
+                        this.updateSelectedTemplateDisplay();
                     } catch (error) {
                         console.error('重置表单失败:', error);
                     }
@@ -5634,6 +5381,67 @@ KH Laser 销售部
                     } catch (error) {
                         console.error('隐藏加载中失败:', error);
                     }
+                },
+                
+                // 内部方法，用于从计算状态更新报价显示
+                updateQuoteDisplayFromState(state) {
+                    try {
+                        const cnyPrice = this.getElement('cnyPrice');
+                        const usdPrice = this.getElement('usdPrice');
+                        
+                        if (cnyPrice) cnyPrice.textContent = `¥${CalculationEngine.formatPrice(state.finalTotalCNY)}`;
+                        if (usdPrice) usdPrice.textContent = `$${CalculationEngine.formatPrice(state.finalTotalUSD)}`;
+                        
+                        // 更新费用明细显示
+                        this.updatePriceDetailsFromState(state);
+                        
+                        // 更新DataModule中的当前报价（保持向后兼容）
+                        KHQuoteSystem.DataModule.updateCurrentQuote({
+                            totalCNY: state.finalTotalCNY,
+                            totalUSD: state.finalTotalUSD
+                        });
+                        
+                    } catch (error) {
+                        console.error('从状态更新UI失败:', error);
+                    }
+                },
+                
+                // 内部方法，用于更新费用明细
+                updatePriceDetailsFromState(state) {
+                    try {
+                        const priceDetailMachine = this.getElement('priceDetailMachine');
+                        const priceDetailWaterCooler = this.getElement('priceDetailWaterCooler');
+                        const priceDetailAccessories = this.getElement('priceDetailAccessories');
+                        const priceDetailOtherAccessories = this.getElement('priceDetailOtherAccessories');
+                        const priceDetailInternationalShipping = this.getElement('priceDetailInternationalShipping');
+                        const priceDetailDomesticShipping = this.getElement('priceDetailDomesticShipping');
+                        const priceDetailOtherFees = this.getElement('priceDetailOtherFees');
+                        const priceDetailTotal = this.getElement('priceDetailTotal');
+                        
+                        if (priceDetailMachine) priceDetailMachine.textContent = `¥${CalculationEngine.formatPrice(state.machinePrice)}`;
+                        if (priceDetailWaterCooler) priceDetailWaterCooler.textContent = `¥${CalculationEngine.formatPrice(state.waterChillerPrice)}`;
+                        if (priceDetailAccessories) priceDetailAccessories.textContent = `¥${CalculationEngine.formatPrice(state.accessoriesPrice)}`;
+                        if (priceDetailOtherAccessories) priceDetailOtherAccessories.textContent = `¥${CalculationEngine.formatPrice(state.otherPartsPrice)}`;
+                        if (priceDetailInternationalShipping) priceDetailInternationalShipping.textContent = `¥${CalculationEngine.formatPrice(state.internationalShipping)}`;
+                        if (priceDetailDomesticShipping) priceDetailDomesticShipping.textContent = `¥${CalculationEngine.formatPrice(state.domesticShipping)}`;
+                        if (priceDetailOtherFees) priceDetailOtherFees.textContent = `¥${CalculationEngine.formatPrice(state.otherFee)}`;
+                        if (priceDetailTotal) priceDetailTotal.textContent = `¥${CalculationEngine.formatPrice(state.finalTotalCNY)}`;
+                        
+                    } catch (error) {
+                        console.error('更新费用明细失败:', error);
+                    }
+                },
+                
+                // 统一渲染方法，为后续单点刷新做准备
+                renderAll() {
+                    // 从 CalculationEngine 获取最新状态，更新价格显示
+                    const state = window.CalculationEngine.getState();
+                    this.updateQuoteDisplayFromState(state);
+                    
+                    this.updateOtherAccessoriesDerivedState(); // 重新计算并渲染其他配件
+                    this.updateAllProductPrices();             // 更新水冷机、配件、功率下拉的价格标签
+                    this.updateHistoryDisplay();               // 刷新历史记录列表
+                    this.updateSelectedTemplateDisplay();      // 新增：确保模板内容随报价变化刷新
                 }
             };
             
@@ -5652,7 +5460,8 @@ KH Laser 销售部
                                 if (!isNaN(newRate) && newRate > 0) {
                                     DataModule.updateExchangeRate(newRate);
                                     DataModule.saveToLocalStorage();
-                                    UIModule.updateQuoteDisplay();
+                                    CalculationEngine.recalculateAll();
+                                    KHQuoteSystem.UIModule.renderAll(); // 新增
                                     NotificationModule.showSuccess('汇率已更新');
                                 } else {
                                     NotificationModule.showWarning('请输入有效的汇率值');
@@ -5671,8 +5480,8 @@ KH Laser 销售部
                                     document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
                                     e.target.classList.add('active');
                                     DataModule.updateCurrentQuote({ priceSource: source });
-                                    UIModule.updateAllProductPrices();
-                                    UIModule.updateQuoteDisplay();
+                                    CalculationEngine.recalculateAll();
+                                    KHQuoteSystem.UIModule.renderAll(); // 新增
                                 } catch (error) {
                                     console.error('选择价格源失败:', error);
                                 }
@@ -5688,7 +5497,8 @@ KH Laser 销售部
                                         const value = e.target.value;
                                         const field = e.target.id;
                                         DataModule.updateCurrentQuote({ [field]: value });
-                                        UIModule.updateQuoteDisplay();
+                                        CalculationEngine.recalculateAll();
+                                        KHQuoteSystem.UIModule.renderAll(); // 新增
                                     } catch (error) {
                                         console.error('更新费用失败:', error);
                                     }
@@ -5724,18 +5534,14 @@ KH Laser 销售部
                             button.addEventListener('click', (e) => {
                                 try {
                                     const province = e.target.dataset.province;
-                                    // 重置下拉框
+                                    // 1. 更新界面样式（保持视觉反馈）
                                     document.getElementById('provinceSelect').value = '';
-                                    // 重置所有省份按钮状态
-                                    document.querySelectorAll('[data-province]').forEach(btn => {
-                                        btn.classList.remove('active');
-                                    });
-                                    // 设置当前按钮为选中状态
+                                    document.querySelectorAll('[data-province]').forEach(btn => btn.classList.remove('active'));
                                     e.target.classList.add('active');
-                                    // 更新当前报价中的省份
-                                    DataModule.updateCurrentQuote({ selectedProvince: province });
-                                    // 计算并更新国内运费
-                                    updateDomesticShipping(province);
+                                    // 2. 更新隐藏 input（唯一数据源）
+                                    document.getElementById('provinceValue').value = province;
+                                    // 3. 让 Controller 处理后续（收集表单、更新 DataModule、重算、渲染）
+                                    KHQuoteSystem.QuoteController.handleFormChange();
                                 } catch (error) {
                                     console.error('选择省份失败:', error);
                                 }
@@ -5749,16 +5555,15 @@ KH Laser 销售部
                                 try {
                                     const province = e.target.value;
                                     if (province) {
-                                        // 重置按钮状态
+                                        // 1. 更新界面样式
                                         document.querySelectorAll('[data-province]').forEach(btn => {
-                                            btn.classList.remove('btn-primary');
+                                            btn.classList.remove('btn-primary', 'active');
                                             btn.classList.add('btn-secondary');
-                                            btn.classList.remove('active');
                                         });
-                                        // 更新当前报价中的省份
-                                        DataModule.updateCurrentQuote({ selectedProvince: province });
-                                        // 计算并更新国内运费
-                                        updateDomesticShipping(province);
+                                        // 2. 更新隐藏 input
+                                        document.getElementById('provinceValue').value = province;
+                                        // 3. 让 Controller 处理后续
+                                        KHQuoteSystem.QuoteController.handleFormChange();
                                     }
                                 } catch (error) {
                                     console.error('选择省份失败:', error);
@@ -5766,22 +5571,7 @@ KH Laser 销售部
                             });
                         }
                         
-                        // 更新国内运费的函数
-                        function updateDomesticShipping(province) {
-                            try {
-                                const currentQuote = DataModule.getCurrentQuote();
-                                const machine = currentQuote.selectedMachine;
-                                if (machine && machine.cbm) {
-                                    const cbm = machine.cbm;
-                                    const shippingFee = QuoteModule.calculateDomesticShipping(cbm, province);
-                                    DataModule.updateCurrentQuote({ domesticShipping: shippingFee });
-                                    document.getElementById('domesticShipping').value = shippingFee;
-                                    UIModule.updateQuoteDisplay();
-                                }
-                            } catch (error) {
-                                console.error('更新国内运费失败:', error);
-                            }
-                        }
+
                         
                         // 选择模板按钮
                         const selectTemplateBtn = document.getElementById('selectTemplateBtn');
@@ -5794,57 +5584,9 @@ KH Laser 销售部
                         // 复制报价功能（基于模板）- 修复：复制时自动保存到历史记录
                         const copyQuoteBtn = document.getElementById('copyQuote');
                         if (copyQuoteBtn) {
-                            copyQuoteBtn.addEventListener('click', () => {
+                            copyQuoteBtn.addEventListener('click', async () => {
                                 try {
-                                    const selectedTemplate = DataModule.getSelectedTemplate();
-                                    
-                                    if (!selectedTemplate) {
-                                        NotificationModule.showWarning('请先选择报价模板');
-                                        return;
-                                    }
-                                    
-                                    const currentQuote = DataModule.getCurrentQuote();
-                                    const products = DataModule.getProducts();
-                                    const exchangeRate = DataModule.getExchangeRate();
-                                    const priceSource = currentQuote.priceSource;
-                                    
-                                    // 使用统一的价格计算入口
-                                    const calculated = QuoteModule.getCalculatedQuote(currentQuote, products, exchangeRate, priceSource);
-                                    
-                                    // 修复：保存当前报价到历史记录（深拷贝）
-                                    try {
-                                        const savedQuote = DataModule.saveCurrentQuoteToHistory();
-                                        UIModule.updateHistoryDisplay();
-                                        UIModule.updateSettingsStats();
-                                        
-                                        console.log('报价已保存到历史记录:', savedQuote);
-                                    } catch (saveError) {
-                                        console.error('保存报价到历史记录失败:', saveError);
-                                        // 不阻止复制操作，只显示警告
-                                        NotificationModule.showWarning('报价保存失败，但复制操作继续');
-                                    }
-                                    
-                                    // 生成填充后的模板内容
-                                    const filledContent = QuoteModule.generateTemplateContent(
-                                        selectedTemplate, 
-                                        currentQuote, 
-                                        products, 
-                                        calculated
-                                    );
-                                    
-                                    // 复制到剪贴板
-                                    navigator.clipboard.writeText(filledContent).then(() => {
-                                        NotificationModule.showSuccess('报价单已复制到剪贴板并保存到历史记录');
-                                    }).catch(() => {
-                                        // 备用方法
-                                        const textArea = document.createElement('textarea');
-                                        textArea.value = filledContent;
-                                        document.body.appendChild(textArea);
-                                        textArea.select();
-                                        document.execCommand('copy');
-                                        document.body.removeChild(textArea);
-                                        NotificationModule.showSuccess('报价单已复制到剪贴板并保存到历史记录');
-                                    });
+                                    await window.QuoteController.copyQuote();
                                 } catch (error) {
                                     console.error('复制报价失败:', error);
                                     NotificationModule.showError('复制报价失败');
@@ -5856,9 +5598,8 @@ KH Laser 销售部
                         if (loadLastQuoteBtn) {
                             loadLastQuoteBtn.addEventListener('click', () => {
                                 try {
-                                    const history = DataModule.getQuoteHistory();
-                                    if (history.length > 0) {
-                                        const lastQuote = history[0]; // 最新的在最前面
+                                    const lastQuote = HistoryModule.getLatest();
+                                    if (lastQuote) {
                                         UIModule.selectHistoryItem(lastQuote.id);
                                     } else {
                                         NotificationModule.showWarning('暂无历史报价记录');
@@ -5874,31 +5615,7 @@ KH Laser 销售部
                         if (resetCalculationBtn) {
                             resetCalculationBtn.addEventListener('click', () => {
                                 try {
-                                    DataModule.updateCurrentQuote({
-                                        selectedSeries: '',
-                                        selectedModel: '',
-                                        selectedPower: '',
-                                        selectedMachine: null,
-                                        selectedWaterCooler: null,
-                                        selectedAccessories: [],
-                                        selectedOtherAccessories: [],
-                                        internationalShipping: 0,
-                                        domesticShipping: 0,
-                                        otherFees: 0,
-                                        quantity: 1,
-                                        country: 'US',
-                                        zipCode: '',
-                                        priceSource: 'tier1',
-                                        totalCNY: 0,
-                                        totalUSD: 0,
-                                        timestamp: null,
-                                        selectedTemplateId: null
-                                    });
-                                    
-                                    UIModule.resetForm();
-                                    UIModule.updateAllProductPrices();
-                                    UIModule.updateQuoteDisplay();
-                                    NotificationModule.showSuccess('已重置所有选项');
+                                    window.QuoteController.resetQuote();
                                 } catch (error) {
                                     console.error('重置计算失败:', error);
                                     NotificationModule.showError('重置失败');
@@ -6227,7 +5944,7 @@ KH Laser 销售部
                             clearHistoryBtn.addEventListener('click', () => {
                                 try {
                                     if (confirm('确定要清除所有历史报价记录吗？此操作不可撤销。')) {
-                                        const success = DataModule.clearQuoteHistory();
+                                        const success = HistoryModule.clearAll();
                                         if (success) {
                                             UIModule.updateHistoryDisplay();
                                             UIModule.updateSettingsStats();
@@ -6350,7 +6067,9 @@ KH Laser 销售部
                 UIModule,
                 NotificationModule,
                 DataModule,
-                QuoteModule
+                QuoteModule,
+                HistoryModule,
+                FormModule
             };
         })();
 
@@ -6392,7 +6111,7 @@ KH Laser 销售部
                         this.finalTotalUSD = finalTotals.usd;
                         
                         // 第三层：触发UI更新
-                        this.triggerUIUpdate();
+                        // this.triggerUIUpdate(); // 已移除，由 Controller 统一调用 renderAll
                         
                         return this.getState();
                     } catch (error) {
@@ -6428,14 +6147,6 @@ KH Laser 销售部
                         rawCNY: totalCNY,
                         rawUSD: totalUSD
                     };
-                },
-                
-                // 触发UI更新
-                triggerUIUpdate() {
-                    // 通知UI模块更新显示
-                    if (window.KHQuoteSystem && KHQuoteSystem.UIModule) {
-                        KHQuoteSystem.UIModule.updateQuoteDisplayFromState(this.getState());
-                    }
                 },
                 
                 // 获取完整状态
@@ -6490,7 +6201,7 @@ KH Laser 销售部
                         
                         // 机器价格
                         if (currentQuote.selectedMachine) {
-                            this.machinePrice = KHQuoteSystem.QuoteModule.getPriceByTier(
+                            this.machinePrice = CalculationEngine.getPriceByTier(
                                 currentQuote.selectedMachine, 
                                 priceSource
                             );
@@ -6500,7 +6211,7 @@ KH Laser 销售部
                         if (currentQuote.selectedWaterCooler) {
                             const waterCooler = products.waterCoolers.find(wc => wc.id === currentQuote.selectedWaterCooler);
                             if (waterCooler) {
-                                this.waterChillerPrice = KHQuoteSystem.QuoteModule.getPriceByTier(waterCooler, priceSource);
+                                this.waterChillerPrice = CalculationEngine.getPriceByTier(waterCooler, priceSource);
                             }
                         }
                         
@@ -6510,7 +6221,7 @@ KH Laser 销售部
                             currentQuote.selectedAccessories.forEach(accId => {
                                 const accessory = products.accessories.find(acc => acc.id === accId);
                                 if (accessory) {
-                                    this.accessoriesPrice += KHQuoteSystem.QuoteModule.getPriceByTier(accessory, priceSource);
+                                    this.accessoriesPrice += CalculationEngine.getPriceByTier(accessory, priceSource);
                                 }
                             });
                         }
@@ -6521,7 +6232,7 @@ KH Laser 销售部
                             currentQuote.selectedOtherAccessories.forEach(oaccId => {
                                 const otherAccessory = products.otherAccessories.find(oacc => oacc.id === oaccId);
                                 if (otherAccessory) {
-                                    this.otherPartsPrice += KHQuoteSystem.QuoteModule.getPriceByTier(otherAccessory, priceSource);
+                                    this.otherPartsPrice += CalculationEngine.getPriceByTier(otherAccessory, priceSource);
                                 }
                             });
                         }
@@ -6545,7 +6256,7 @@ KH Laser 销售部
                 if (AppState.province) {
                     const currentQuote = KHQuoteSystem.DataModule.getCurrentQuote();
                     if (currentQuote.selectedMachine && currentQuote.selectedMachine.cbm) {
-                        const domesticShipping = KHQuoteSystem.QuoteModule.calculateDomesticShipping(
+                        const domesticShipping = CalculationEngine.calculateDomesticShipping(
                             currentQuote.selectedMachine.cbm,
                             AppState.province
                         );
@@ -6566,12 +6277,6 @@ KH Laser 销售部
             return {
                 AppState,
                 recalculateAll,
-                
-                // 便捷方法：更新特定字段并重新计算
-                updateAndRecalculate(updates) {
-                    AppState.update(updates);
-                    return AppState.getState();
-                },
                 
                 // 获取当前状态
                 getState() {
@@ -6596,265 +6301,437 @@ KH Laser 销售部
                     });
                     
                     return AppState.getState();
+                },
+                
+                // 新增方法（安全版）
+                getUnitPriceById(type, id) {
+                    const currentQuote = KHQuoteSystem.DataModule.getCurrentQuote();
+                    const priceSource = currentQuote.priceSource || 'tier1';
+                    const products = KHQuoteSystem.DataModule.getProducts();
+
+                    let product = null;
+
+                    if (type === 'machine') {
+                        product = id;
+                    }
+
+                    if (type === 'waterCooler') {
+                        product = products.waterCoolers.find(w => w.id === id);
+                    }
+
+                    if (type === 'accessory') {
+                        product = products.accessories.find(a => a.id === id);
+                    }
+
+                    if (type === 'otherAccessory') {
+                        product = products.otherAccessories.find(o => o.id === id);
+                    }
+
+                    if (!product) return 0;
+
+                    return this.getPriceByTier(product, priceSource);
+                },
+                
+                // 价格格式化工具
+                formatPrice(price) {
+                    try {
+                        return new Intl.NumberFormat('zh-CN', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(price);
+                    } catch (error) {
+                        console.error('格式化价格失败:', error);
+                        return '0';
+                    }
+                },
+                
+                // 按等级获取价格
+                getPriceByTier(product, priceSource) {
+                    try {
+                        if (!product) return 0;
+                        switch (priceSource) {
+                            case 'tier1': return product.price || 0;
+                            case 'tier2': return product.priceTier2 || product.price || 0;
+                            case 'tier3': return product.priceTier3 || product.price || 0;
+                            default: return product.price || 0;
+                        }
+                    } catch (error) {
+                        console.error('获取价格失败:', error);
+                        return 0;
+                    }
+                },
+                
+                // 计算国内运费
+                calculateDomesticShipping(cbm, province) {
+                    try {
+                        // 青岛的特殊规则
+                        if (province === "青岛") {
+                            if (cbm <= 5) {
+                                return 500;
+                            } else {
+                                return Math.ceil(500 + (cbm - 5) * 110);
+                            }
+                        }
+                        
+                        // 其他省份的规则
+                        const provinceRule = DOMESTIC_SHIPPING_RULES[province] || DOMESTIC_SHIPPING_RULES['其他'];
+                        const firstWeightPrice = provinceRule.firstWeightPrice;
+                        
+                        // 找到对应的CBM区间单价
+                        let unitPrice = 0;
+                        let foundRange = false;
+                        
+                        for (const range of provinceRule.cbmRanges) {
+                            // 处理 Infinity 的情况
+                            if (range.max === Infinity) {
+                                if (cbm >= range.min) {
+                                    unitPrice = range.price;
+                                    foundRange = true;
+                                    break;
+                                }
+                            } else if (range.max) {
+                                if (cbm >= range.min && cbm <= range.max) {
+                                    unitPrice = range.price;
+                                    foundRange = true;
+                                    break;
+                                }
+                            } else {
+                                if (cbm >= range.min) {
+                                    unitPrice = range.price;
+                                    foundRange = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 兜底逻辑：如果没有找到匹配的区间，使用最后一个区间的价格
+                        if (!foundRange && provinceRule.cbmRanges.length > 0) {
+                            const lastRange = provinceRule.cbmRanges[provinceRule.cbmRanges.length - 1];
+                            unitPrice = lastRange.price;
+                        }
+                        
+                        // 计算运费
+                        const shippingFee = (firstWeightPrice + cbm * unitPrice) * 1.07;
+                        // 进一制，返回整数
+                        return Math.ceil(shippingFee);
+                    } catch (error) {
+                        console.error('计算国内运费失败:', error);
+                        // 兜底逻辑：返回一个默认值
+                        return Math.ceil(30 + cbm * 200 * 1.07);
+                    }
+                },
+                
+                // 价格输入校验
+                validatePriceInputs(quoteData, exchangeRate) {
+                    if (exchangeRate <= 0) {
+                        throw new Error('汇率必须大于0');
+                    }
+                    if (exchangeRate > 100) {
+                        throw new Error('汇率值异常，请检查');
+                    }
+                    const quantity = parseInt(quoteData.quantity) || 1;
+                    if (quantity <= 0) {
+                        throw new Error('数量必须大于0');
+                    }
+                    const shipping = parseFloat(quoteData.internationalShipping) || 0;
+                    if (shipping < 0) {
+                        throw new Error('运费不能为负数');
+                    }
+                },
+                
+                // 计算完整报价
+                calculateFullQuote(quoteData, products, exchangeRate, priceSource) {
+                    try {
+                        // 输入校验
+                        this.validatePriceInputs(quoteData, exchangeRate);
+
+                        let totalCNY = 0;
+                        let machinePrice = 0;
+                        let waterCoolerPrice = 0;
+                        let accessoriesPrice = 0;
+                        let otherAccessoriesPrice = 0;
+                        let shippingTotal = 0;
+                        let otherFeesPrice = 0;
+
+                        // 机器价格
+                        if (quoteData.selectedMachine) {
+                            machinePrice = this.getPriceByTier(quoteData.selectedMachine, priceSource);
+                            totalCNY += machinePrice;
+                        }
+
+                        // 水冷机
+                        if (quoteData.selectedWaterCooler) {
+                            const waterCooler = products.waterCoolers.find(wc => wc.id === quoteData.selectedWaterCooler);
+                            if (waterCooler) {
+                                waterCoolerPrice = this.getPriceByTier(waterCooler, priceSource);
+                                totalCNY += waterCoolerPrice;
+                            }
+                        }
+
+                        // 配件
+                        if (quoteData.selectedAccessories) {
+                            quoteData.selectedAccessories.forEach(accId => {
+                                const accessory = products.accessories.find(acc => acc.id === accId);
+                                if (accessory) {
+                                    const price = this.getPriceByTier(accessory, priceSource);
+                                    accessoriesPrice += price;
+                                    totalCNY += price;
+                                }
+                            });
+                        }
+
+                        // 其他配件
+                        if (quoteData.selectedOtherAccessories) {
+                            quoteData.selectedOtherAccessories.forEach(oaccId => {
+                                const otherAccessory = products.otherAccessories.find(oacc => oacc.id === oaccId);
+                                if (otherAccessory) {
+                                    const price = this.getPriceByTier(otherAccessory, priceSource);
+                                    otherAccessoriesPrice += price;
+                                    totalCNY += price;
+                                }
+                            });
+                        }
+
+                        const internationalShipping = parseFloat(quoteData.internationalShipping) || 0;
+                        const domesticShipping = parseFloat(quoteData.domesticShipping) || 0;
+                        const otherFees = parseFloat(quoteData.otherFees) || 0;
+
+                        shippingTotal = internationalShipping + domesticShipping;
+                        otherFeesPrice = otherFees;
+
+                        totalCNY += internationalShipping + domesticShipping + otherFees;
+                        totalCNY *= (parseInt(quoteData.quantity) || 1);
+
+                        const totalUSD = Math.ceil(totalCNY / exchangeRate);
+
+                        return {
+                            totalCNY: this.formatPrice(totalCNY),
+                            totalUSD: this.formatPrice(totalUSD),
+                            rawCNY: totalCNY,
+                            rawUSD: totalUSD,
+                            machinePrice: this.formatPrice(machinePrice),
+                            waterCoolerPrice: this.formatPrice(waterCoolerPrice),
+                            accessoriesPrice: this.formatPrice(accessoriesPrice),
+                            otherAccessoriesPrice: this.formatPrice(otherAccessoriesPrice),
+                            otherFeesPrice: this.formatPrice(otherFeesPrice),
+                            shippingTotal: this.formatPrice(shippingTotal),
+                            details: {
+                                machinePrice,
+                                waterCoolerPrice,
+                                accessoriesPrice,
+                                otherAccessoriesPrice,
+                                otherFeesPrice,
+                                shippingTotal
+                            }
+                        };
+                    } catch (error) {
+                        console.error('计算报价失败:', error);
+                        // 使用 Utils 的默认结果（已修复）
+                        return Utils.getDefaultPriceResult();
+                    }
+                },
+                
+                // 获取默认价格结果
+                getDefaultPriceResult() {
+                    return Utils.getDefaultPriceResult(); // 直接复用已修复的 Utils 方法
                 }
             };
         })();
 
-        // ==================== 修改：UIModule 扩展 ====================
-        // 在UIModule中添加新方法
-        const originalUIModule = KHQuoteSystem.UIModule;
+        // ==================== QuoteController ====================
+        // 报价业务用例编排层，负责协调 DataModule、HistoryModule、CalculationEngine 等
+        const QuoteController = {
+            // ------------------------------------------------------
+            // 私有工具方法（纯数据转换、延迟）
+            // ------------------------------------------------------
 
-        // 扩展UIModule
-        Object.assign(KHQuoteSystem.UIModule, {
-            // 新增：从状态对象更新UI
-            updateQuoteDisplayFromState(state) {
-                try {
-                    const cnyPrice = this.getElement('cnyPrice');
-                    const usdPrice = this.getElement('usdPrice');
-                    
-                    if (cnyPrice) cnyPrice.textContent = `¥${Utils.formatPrice(state.finalTotalCNY)}`;
-                    if (usdPrice) usdPrice.textContent = `$${Utils.formatPrice(state.finalTotalUSD)}`;
-                    
-                    // 更新费用明细显示
-                    this.updatePriceDetailsFromState(state);
-                    
-                    // 更新DataModule中的当前报价（保持向后兼容）
-                    KHQuoteSystem.DataModule.updateCurrentQuote({
-                        totalCNY: state.finalTotalCNY,
-                        totalUSD: state.finalTotalUSD
-                    });
-                    
-                } catch (error) {
-                    console.error('从状态更新UI失败:', error);
-                }
+
+
+            // 从历史记录恢复报价数据（纯数据转换，不操作 DOM）
+            _restoreFromHistory(historyQuote) {
+                return {
+                    selectedSeries: historyQuote.selectedSeries || '',
+                    selectedModel: historyQuote.selectedModel || '',
+                    selectedPower: historyQuote.selectedPower || '',
+                    selectedMachine: historyQuote.selectedMachine ?
+                        KHQuoteSystem.DataModule.deepClone(historyQuote.selectedMachine) : null,
+                    selectedWaterCooler: historyQuote.selectedWaterCooler || null,
+                    selectedAccessories: [...(historyQuote.selectedAccessories || [])],
+                    selectedOtherAccessories: [...(historyQuote.selectedOtherAccessories || [])],
+                    internationalShipping: parseFloat(historyQuote.internationalShipping) || 0,
+                    domesticShipping: parseFloat(historyQuote.domesticShipping) || 0,
+                    otherFees: parseFloat(historyQuote.otherFees) || 0,
+                    quantity: parseInt(historyQuote.quantity) || 1,
+                    country: historyQuote.country || 'US',
+                    zipCode: historyQuote.zipCode || '',
+                    selectedProvince: historyQuote.selectedProvince || '',
+                    priceSource: historyQuote.priceSource || 'tier1',
+                    selectedTemplateId: historyQuote.selectedTemplateId || null
+                };
             },
-            
-            // 新增：从状态更新费用明细
-            updatePriceDetailsFromState(state) {
-                try {
-                    const priceDetailMachine = this.getElement('priceDetailMachine');
-                    const priceDetailWaterCooler = this.getElement('priceDetailWaterCooler');
-                    const priceDetailAccessories = this.getElement('priceDetailAccessories');
-                    const priceDetailOtherAccessories = this.getElement('priceDetailOtherAccessories');
-                    const priceDetailInternationalShipping = this.getElement('priceDetailInternationalShipping');
-                    const priceDetailDomesticShipping = this.getElement('priceDetailDomesticShipping');
-                    const priceDetailOtherFees = this.getElement('priceDetailOtherFees');
-                    const priceDetailTotal = this.getElement('priceDetailTotal');
-                    
-                    if (priceDetailMachine) priceDetailMachine.textContent = `¥${Utils.formatPrice(state.machinePrice)}`;
-                    if (priceDetailWaterCooler) priceDetailWaterCooler.textContent = `¥${Utils.formatPrice(state.waterChillerPrice)}`;
-                    if (priceDetailAccessories) priceDetailAccessories.textContent = `¥${Utils.formatPrice(state.accessoriesPrice)}`;
-                    if (priceDetailOtherAccessories) priceDetailOtherAccessories.textContent = `¥${Utils.formatPrice(state.otherPartsPrice)}`;
-                    if (priceDetailInternationalShipping) priceDetailInternationalShipping.textContent = `¥${Utils.formatPrice(state.internationalShipping)}`;
-                    if (priceDetailDomesticShipping) priceDetailDomesticShipping.textContent = `¥${Utils.formatPrice(state.domesticShipping)}`;
-                    if (priceDetailOtherFees) priceDetailOtherFees.textContent = `¥${Utils.formatPrice(state.otherFee)}`;
-                    if (priceDetailTotal) priceDetailTotal.textContent = `¥${Utils.formatPrice(state.finalTotalCNY)}`;
-                    
-                } catch (error) {
-                    console.error('更新费用明细失败:', error);
-                }
-            }
-        });
 
-        // ==================== 修改：EventModule 统一事件处理 ====================
-        // 修改省份按钮事件（示例）
-        document.querySelectorAll('[data-province]').forEach(button => {
-            button.addEventListener('click', (e) => {
-                try {
-                    const province = e.target.dataset.province;
-                    
-                    // 重置下拉框
-                    document.getElementById('provinceSelect').value = '';
-                    
-                    // 重置所有省份按钮状态
-                    document.querySelectorAll('[data-province]').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    
-                    // 设置当前按钮为选中状态
-                    e.target.classList.add('active');
-                    
-                    // 只更新状态，然后统一重新计算
-                    CalculationEngine.updateAndRecalculate({ province });
-                    
-                } catch (error) {
-                    console.error('省份选择失败:', error);
-                }
-            });
-        });
 
-        // 修改省份下拉框事件
-        const provinceSelectElement = document.getElementById('provinceSelect');
-        if (provinceSelectElement) {
-            provinceSelectElement.addEventListener('change', (e) => {
-                try {
-                    const province = e.target.value;
-                    if (province) {
-                        // 重置按钮状态
-                        document.querySelectorAll('[data-province]').forEach(btn => {
-                            btn.classList.remove('active');
-                        });
-                        
-                        // 只更新状态，然后统一重新计算
-                        CalculationEngine.updateAndRecalculate({ province });
-                    }
-                } catch (error) {
-                    console.error('省份选择失败:', error);
-                }
-            });
-        }
 
-        // 修改费用输入事件
-        ['internationalShipping', 'domesticShipping', 'otherFees', 'quantity'].forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('change', (e) => {
-                    try {
-                        const value = e.target.value;
-                        const fieldMap = {
-                            'internationalShipping': 'internationalShipping',
-                            'domesticShipping': 'domesticShipping',
-                            'otherFees': 'otherFee',
-                            'quantity': 'quantity'
-                        };
-                        
-                        const updates = {};
-                        updates[fieldMap[id]] = parseFloat(value) || (id === 'quantity' ? 1 : 0);
-                        
-                        // 只更新状态，然后统一重新计算
-                        CalculationEngine.updateAndRecalculate(updates);
-                        
-                    } catch (error) {
-                        console.error('更新费用失败:', error);
-                    }
+            // ------------------------------------------------------
+            // 公共方法：加载历史报价并应用到表单
+            // ------------------------------------------------------
+            async loadHistoryQuote(quoteId) {
+                const quote = KHQuoteSystem.HistoryModule.getById(quoteId);
+                if (!quote) {
+                    KHQuoteSystem.NotificationModule.showWarning('未找到该历史报价记录');
+                    return false;
+                }
+
+                // 1. 重置表单（纯 DOM 重置）
+                KHQuoteSystem.UIModule._resetFormDOM(); // 仍使用 UIModule 的 reset，或改用 FormModule.clearFormSelections
+
+                // 2. 填充表单（不修改 DataModule）
+                KHQuoteSystem.FormModule.populateForm(quote);
+
+                // 3. 将历史数据转换为当前报价数据
+                const restoredData = this._restoreFromHistory(quote);
+
+                // 4. 应用到 DataModule（由 Controller 统一修改数据）
+                KHQuoteSystem.DataModule.updateCurrentQuote(restoredData);
+
+                // 5. 重新计算并刷新 UI
+                KHQuoteSystem.CalculationEngine.recalculateAll();
+                KHQuoteSystem.UIModule.renderAll();
+
+                // 7. 设置模板（如果历史记录中有）
+                if (quote.selectedTemplateId) {
+                    KHQuoteSystem.DataModule.selectTemplate(quote.selectedTemplateId);
+                    // KHQuoteSystem.UIModule.updateSelectedTemplateDisplay(); // 删除，renderAll 内部已调用
+                }
+
+                // 8. 更新历史记录选中状态
+                KHQuoteSystem.UIModule.selectedHistoryItemId = quoteId;
+                // KHQuoteSystem.UIModule.updateHistoryDisplay(); // 删除，renderAll 内部已调用
+
+                KHQuoteSystem.NotificationModule.showSuccess('历史报价已加载到表单');
+                return true;
+            },
+
+            // ------------------------------------------------------
+            // 公共方法：重置报价
+            // ------------------------------------------------------
+            resetQuote() {
+                // 1. 重置 DataModule 中的报价数据（清空选择）
+                KHQuoteSystem.DataModule.updateCurrentQuote({
+                    selectedSeries: '',
+                    selectedModel: '',
+                    selectedPower: '',
+                    selectedMachine: null,
+                    selectedWaterCooler: null,
+                    selectedAccessories: [],
+                    selectedOtherAccessories: [],
+                    internationalShipping: 0,
+                    domesticShipping: 0,
+                    otherFees: 0,
+                    quantity: 1,
+                    country: 'US',
+                    zipCode: '',
+                    selectedProvince: '',
+                    priceSource: 'tier1',
+                    totalCNY: 0,
+                    totalUSD: 0,
+                    selectedTemplateId: null
                 });
+
+                // 2. 重置计算引擎状态
+                KHQuoteSystem.CalculationEngine.reset();
+
+                // 3. 重置表单 DOM
+                KHQuoteSystem.UIModule.resetForm();
+
+                // 4. 触发重新计算
+                KHQuoteSystem.CalculationEngine.recalculateAll();
+                KHQuoteSystem.UIModule.renderAll(); // 新增
+
+                KHQuoteSystem.NotificationModule.showSuccess('已重置所有选项');
+            },
+
+            // ------------------------------------------------------
+            // 公共方法：处理表单变更
+            // ------------------------------------------------------
+            handleFormChange() {
+                // 从表单收集所有数据
+                const formData = KHQuoteSystem.FormModule.collectFormData();
+                // 更新 DataModule
+                KHQuoteSystem.DataModule.updateCurrentQuote(formData);
+                // 重新计算并刷新 UI
+                KHQuoteSystem.CalculationEngine.recalculateAll();
+                KHQuoteSystem.UIModule.renderAll();
+            },
+
+            // ------------------------------------------------------
+            // 公共方法：复制报价
+            // ------------------------------------------------------
+            async copyQuote() {
+                const selectedTemplate = KHQuoteSystem.DataModule.getSelectedTemplate();
+                if (!selectedTemplate) {
+                    KHQuoteSystem.NotificationModule.showWarning('请先选择报价模板');
+                    return;
+                }
+
+                const currentQuote = KHQuoteSystem.DataModule.getCurrentQuote();
+                const products = KHQuoteSystem.DataModule.getProducts();
+                const exchangeRate = KHQuoteSystem.DataModule.getExchangeRate();
+                const priceSource = currentQuote.priceSource;
+
+                const calculated = KHQuoteSystem.CalculationEngine.calculateFullQuote(
+                    currentQuote,
+                    products,
+                    exchangeRate,
+                    priceSource
+                );
+
+                // 保存历史记录
+                try {
+                    const savedQuote = KHQuoteSystem.HistoryModule.saveCurrentQuote();
+                    KHQuoteSystem.UIModule.updateSettingsStats();
+                    KHQuoteSystem.UIModule.renderAll(); // 新增：刷新历史列表及其他 UI
+                    if (DEBUG) console.log('报价已保存到历史记录:', savedQuote);
+                } catch (saveError) {
+                    console.error('保存报价到历史记录失败:', saveError);
+                    KHQuoteSystem.NotificationModule.showWarning('报价保存失败，但复制操作继续');
+                }
+
+                // 生成模板内容
+                const filledContent = KHQuoteSystem.QuoteModule.generateTemplateContent(
+                    selectedTemplate,
+                    currentQuote,
+                    products,
+                    calculated
+                );
+
+                // 复制到剪贴板
+                try {
+                    await navigator.clipboard.writeText(filledContent);
+                    KHQuoteSystem.NotificationModule.showSuccess('报价单已复制到剪贴板并保存到历史记录');
+                } catch {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = filledContent;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    KHQuoteSystem.NotificationModule.showSuccess('报价单已复制到剪贴板并保存到历史记录');
+                }
             }
-        });
+        };
 
-        // 修改机器选择事件（在原有事件处理中添加）
-        // 在系列选择变化事件中添加
-        const seriesSelect = document.getElementById('seriesSelect');
-        if (seriesSelect) {
-            const originalChangeHandler = seriesSelect.onchange;
-            seriesSelect.onchange = function(e) {
-                try {
-                    // 执行原有逻辑
-                    if (originalChangeHandler) originalChangeHandler.call(this, e);
-                    
-                    // 统一重新计算
-                    setTimeout(() => {
-                        CalculationEngine.recalculateAll();
-                    }, 100);
-                    
-                } catch (error) {
-                    console.error('处理系列选择失败:', error);
-                }
-            };
-        }
+        // ==================== 将计算引擎和控制器挂载到 KHQuoteSystem 对象上 ====================
+        // 直接赋值给局部变量 KHQuoteSystem
+        KHQuoteSystem.CalculationEngine = CalculationEngine;
+        KHQuoteSystem.QuoteController = QuoteController;
 
-        // 修改型号选择事件
-        const modelSelect = document.getElementById('modelSelect');
-        if (modelSelect) {
-            const originalChangeHandler = modelSelect.onchange;
-            modelSelect.onchange = function(e) {
-                try {
-                    // 执行原有逻辑
-                    if (originalChangeHandler) originalChangeHandler.call(this, e);
-                    
-                    // 统一重新计算
-                    setTimeout(() => {
-                        CalculationEngine.recalculateAll();
-                    }, 100);
-                    
-                } catch (error) {
-                    console.error('处理型号选择失败:', error);
-                }
-            };
-        }
-
-        // 修改功率选择事件
-        const powerSelect = document.getElementById('powerSelect');
-        if (powerSelect) {
-            const originalChangeHandler = powerSelect.onchange;
-            powerSelect.onchange = function(e) {
-                try {
-                    // 执行原有逻辑
-                    if (originalChangeHandler) originalChangeHandler.call(this, e);
-                    
-                    // 统一重新计算
-                    setTimeout(() => {
-                        CalculationEngine.recalculateAll();
-                    }, 100);
-                    
-                } catch (error) {
-                    console.error('处理功率选择失败:', error);
-                }
-            };
-        }
-
-        // 修改水冷机和配件选择事件
-        document.addEventListener('change', function(e) {
-            if (e.target.matches('#waterCoolerOptions input[type="radio"], #accessoryOptions input[type="checkbox"], #otherAccessoryOptions input[type="checkbox"]')) {
-                try {
-                    // 统一重新计算
-                    setTimeout(() => {
-                        CalculationEngine.recalculateAll();
-                    }, 50);
-                } catch (error) {
-                    console.error('处理产品选择失败:', error);
-                }
-            }
-        });
-
-        // ==================== 修改：重置按钮使用统一计算 ====================
-        const resetCalculationBtn = document.getElementById('resetCalculation');
-        if (resetCalculationBtn) {
-            resetCalculationBtn.addEventListener('click', () => {
-                try {
-                    // 重置状态
-                    CalculationEngine.reset();
-                    
-                    // 执行原有重置逻辑（保持UI一致性）
-                    KHQuoteSystem.UIModule.resetForm();
-                    
-                    // 通知成功
-                    KHQuoteSystem.NotificationModule.showSuccess('已重置所有选项');
-                    
-                } catch (error) {
-                    console.error('重置计算失败:', error);
-                    KHQuoteSystem.NotificationModule.showError('重置失败');
-                }
-            });
-        }
-
-        // ==================== 修改：复制报价时使用统一计算 ====================
-        const copyQuoteBtn = document.getElementById('copyQuote');
-        if (copyQuoteBtn) {
-            const originalClickHandler = copyQuoteBtn.onclick;
-            copyQuoteBtn.onclick = function(e) {
-                try {
-                    // 确保状态是最新的
-                    CalculationEngine.recalculateAll();
-                    
-                    // 执行原有逻辑
-                    if (originalClickHandler) originalClickHandler.call(this, e);
-                    
-                } catch (error) {
-                    console.error('复制报价失败:', error);
-                    KHQuoteSystem.NotificationModule.showError('复制报价失败');
-                }
-            };
-        }
-
-        // ==================== 将计算引擎暴露给全局 ====================
+        // 同时暴露到全局（可选，供其他独立调用）
         window.CalculationEngine = CalculationEngine;
+        window.QuoteController = QuoteController;
+        window.KHQuoteSystem = KHQuoteSystem;  // 确保全局对象拥有最新属性
 
-        // 在KHQuoteSystem中暴露
-        if (window.KHQuoteSystem) {
-            KHQuoteSystem.CalculationEngine = CalculationEngine;
-        }
-
-        console.log('统一计算引擎已加载，使用 CalculationEngine.recalculateAll() 进行统一计算');
+        if (DEBUG) console.log('统一计算引擎已加载，使用 CalculationEngine.recalculateAll() 进行统一计算');
 
         // 全局错误处理
         window.addEventListener('error', (event) => {
@@ -6867,8 +6744,6 @@ KH Laser 销售部
         } else {
             KHQuoteSystem.init();
         }
-        
-        window.KHQuoteSystem = KHQuoteSystem;
     </script>
 </body>
 </html>

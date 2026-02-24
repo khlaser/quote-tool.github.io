@@ -6267,6 +6267,8 @@ KH Laser 销售部
                         if (domesticShippingInput) {
                             domesticShippingInput.value = domesticShipping;
                         }
+                        // 同步到DataModule，确保数据一致
+                        KHQuoteSystem.DataModule.updateCurrentQuote({ domesticShipping });
                     }
                 }
                 

@@ -1399,28 +1399,8 @@
             margin-bottom: 18px;
         }
         
-        .quantity-fees-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-        
-        @media (max-width: 1024px) {
-            .quantity-fees-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .quantity-fees-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .quantity-fees-group {
-            display: flex;
-            flex-direction: column;
-        }
+
+
     </style>
 </head>
 <body>
@@ -1614,30 +1594,68 @@
                             <i class="fas fa-calculator"></i>
                             数量与费用设置
                         </h2>
-                        
-                        <div class="quantity-fees-grid">
-                            <div class="quantity-fees-group">
-                                <label for="quantity" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem;">数量</label>
-                                <input type="number" id="quantity" min="1" value="1" style="width: 100%;">
-                            </div>
-                            
-                            <div class="quantity-fees-group">
-                                <label for="internationalShipping" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem;">国际运费 (CNY)</label>
-                                <input type="number" id="internationalShipping" step="0.01" min="0" value="0" style="width: 100%;">
-                            </div>
-                            
-                            <div class="quantity-fees-group">
-                                <label for="domesticShipping" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem;">国内运费 (CNY)</label>
+
+                        <!-- 第一行：国内运费 + 省份按钮组 + 下拉框（三列等宽，底部对齐） -->
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end;">
+                            <!-- 国内运费输入框 -->
+                            <div style="flex: 1;">
+                                <label for="domesticShipping" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国内运费 (CNY)</label>
                                 <input type="number" id="domesticShipping" step="0.01" min="0" value="0" style="width: 100%;">
                             </div>
-                            
-                            <div class="quantity-fees-group">
-                                <label for="otherFees" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem;">其他费用 (CNY)</label>
-                                <input type="number" id="otherFees" step="0.01" min="0" value="0" style="width: 100%;">
+                            <!-- 省份按钮组（三个按钮等宽） -->
+                            <div style="flex: 1;">
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn province-btn" data-province="青岛" style="flex: 1;">青岛</button>
+                                    <button class="btn province-btn" data-province="浙江" style="flex: 1;">浙江</button>
+                                    <button class="btn province-btn" data-province="广东" style="flex: 1;">广东</button>
+                                </div>
                             </div>
-                            
-                            <div class="quantity-fees-group">
-                                <label for="country" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem;">国家</label>
+                            <!-- 下拉框 -->
+                            <div style="flex: 1;">
+                                <label for="provinceSelect" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block; opacity: 0; pointer-events: none;">占位</label>
+                                <select id="provinceSelect" style="width: 100%;">
+                                    <option value="">请选择其他省份</option>
+                                    <option value="北京">北京</option>
+                                    <option value="上海">上海</option>
+                                    <option value="江苏">江苏</option>
+                                    <option value="山东">山东</option>
+                                    <option value="天津">天津</option>
+                                    <option value="河北">河北</option>
+                                    <option value="山西">山西</option>
+                                    <option value="内蒙古">内蒙古</option>
+                                    <option value="辽宁">辽宁</option>
+                                    <option value="吉林">吉林</option>
+                                    <option value="黑龙江">黑龙江</option>
+                                    <option value="安徽">安徽</option>
+                                    <option value="福建">福建</option>
+                                    <option value="江西">江西</option>
+                                    <option value="河南">河南</option>
+                                    <option value="湖北">湖北</option>
+                                    <option value="湖南">湖南</option>
+                                    <option value="广西">广西</option>
+                                    <option value="海南">海南</option>
+                                    <option value="重庆">重庆</option>
+                                    <option value="四川">四川</option>
+                                    <option value="贵州">贵州</option>
+                                    <option value="云南">云南</option>
+                                    <option value="西藏">西藏</option>
+                                    <option value="陕西">陕西</option>
+                                    <option value="甘肃">甘肃</option>
+                                    <option value="青海">青海</option>
+                                    <option value="宁夏">宁夏</option>
+                                </select>
+                                <input type="hidden" id="provinceValue" value="">
+                            </div>
+                        </div>
+
+                        <!-- 第二行：国际运费、国家、邮编（保持不变的三列等宽） -->
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <label for="internationalShipping" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国际运费 (CNY)</label>
+                                <input type="number" id="internationalShipping" step="0.01" min="0" value="0" style="width: 100%;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="country" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国家</label>
                                 <select id="country" style="width: 100%;">
                                     <option value="US">美国</option>
                                     <option value="CN">中国</option>
@@ -1646,54 +1664,26 @@
                                     <option value="other">其他</option>
                                 </select>
                             </div>
-                            
-                            <div class="quantity-fees-group">
-                                <label for="zipCode" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem;">邮编</label>
+                            <div style="flex: 1;">
+                                <label for="zipCode" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">邮编</label>
                                 <input type="text" id="zipCode" placeholder="请输入邮编" style="width: 100%;">
                             </div>
                         </div>
-                        
-                        <!-- 省份选择区域 -->
-                        <div style="margin-top: 15px;">
-                            <label style="font-weight: 500; font-size: 0.92rem; margin-bottom: 8px; display: block;">省份选择</label>
-                            <div class="layout-row" style="margin-bottom: 8px;">
-                                <button class="btn province-btn" data-province="青岛">青岛</button>
-                                <button class="btn province-btn" data-province="浙江">浙江</button>
-                                <button class="btn province-btn" data-province="广东">广东</button>
-                            </div>
-                            <select id="provinceSelect" style="width: 100%;">
-                                <option value="">请选择其他省份</option>
-                                <option value="北京">北京</option>
-                                <option value="上海">上海</option>
-                                <option value="江苏">江苏</option>
-                                <option value="山东">山东</option>
-                                <option value="天津">天津</option>
-                                <option value="河北">河北</option>
-                                <option value="山西">山西</option>
-                                <option value="内蒙古">内蒙古</option>
-                                <option value="辽宁">辽宁</option>
-                                <option value="吉林">吉林</option>
-                                <option value="黑龙江">黑龙江</option>
-                                <option value="安徽">安徽</option>
-                                <option value="福建">福建</option>
-                                <option value="江西">江西</option>
-                                <option value="河南">河南</option>
-                                <option value="湖北">湖北</option>
-                                <option value="湖南">湖南</option>
-                                <option value="广西">广西</option>
-                                <option value="海南">海南</option>
-                                <option value="重庆">重庆</option>
-                                <option value="四川">四川</option>
-                                <option value="贵州">贵州</option>
-                                <option value="云南">云南</option>
-                                <option value="西藏">西藏</option>
-                                <option value="陕西">陕西</option>
-                                <option value="甘肃">甘肃</option>
-                                <option value="青海">青海</option>
-                                <option value="宁夏">宁夏</option>
 
-                            </select>
-                            <input type="hidden" id="provinceValue" value="">
+                        <!-- 第三行：数量、其他费用、其他费用2（三列等宽，新增其他费用2） -->
+                        <div style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label for="quantity" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">数量</label>
+                                <input type="number" id="quantity" min="1" value="1" style="width: 100%;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="otherFees" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">其他费用 (CNY)</label>
+                                <input type="number" id="otherFees" step="0.01" min="0" value="0" style="width: 100%;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="otherFees2" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">其他费用2 (CNY)</label>
+                                <input type="number" id="otherFees2" step="0.01" min="0" value="0" style="width: 100%;">
+                            </div>
                         </div>
                     </div>
                     
@@ -2010,7 +2000,7 @@
         </div>
         
         <footer>
-            <p>© 2026 KH Laser 报价系统 | 版本 2.7.7</p>
+            <p>© 2026 KH Laser 报价系统 | 版本 2.8.0</p>
         </footer>
     </div>
 
@@ -2838,49 +2828,44 @@
                     templates: [
                         { 
                             id: 'template1', 
-                            name: '通用报价模板', 
-                            content: `
-Model {machineModel}
+                            name: 'A系列报价模板', 
+                            content: `Model {machineModel}
 packing size: {packingSize} cm
 weight: {actualWeight} 
 with {waterCooler} industry chiller  {standardAccessories}
+
+1. Ruida 8445 control system
+2. Linear Guides 15mm
+3. Red light positioning
+4. 57 stepper motor
+5. Leadshine driver 
+6. Air controling system
+7. Honeycomb platform
+8. Plywood box packaging
+9. Electric up and down lift
 ==============================
 Total price: {totalUSD}`,
                             lastUsed: null
                         },
                         { 
                             id: 'template2', 
-                            name: '详细报价模板', 
-                            content: `KH Laser 激光设备报价单
+                            name: 'C系列报价模板', 
+                            content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight} 
+with {waterCooler} industry chiller  {standardAccessories}
+
+1. Ruida 8445 control system
+2. Linear Guides 15mm
+3. Red light positioning
+4. Leadshine motor and driver
+5. Air controling system
+6. Honeycomb platform
+7. Plywood box packaging
+8. Speed control wheel
+9. Electric up and down lift
 ====================================
-报价日期: {date}
-客户信息: {customer}
-====================================
-设备配置详情:
-1. 机器型号: {machineModel}
-2. 功率规格: {machinePower}
-3. 包装信息: {packingSize}
-4. 重量信息: {actualWeight}
-5. 冷却系统: {waterCooler}
-6. 标准配件: {standardAccessories}
-7. 附加配件: {otherAccessories}
-====================================
-价格明细:
-- 机器价格: ¥{machinePrice}
-- 水冷机价格: ¥{waterCoolerPrice}
-- 配件总价: ¥{accessoriesPrice}
-- 其他费用: ¥{otherFees}
-- 运费总计: ¥{shippingTotal}
-====================================
-最终报价:
-人民币: {totalCNY}
-美元: {totalUSD}
-====================================
-备注: {notes}
-====================================
-KH Laser 销售部
-联系电话: 400-XXX-XXXX
-邮箱: sales@khlaser.com`,
+Total price: {totalUSD}`,
                             lastUsed: null
                         }
                     ],
@@ -2895,6 +2880,7 @@ KH Laser 销售部
                         internationalShipping: 0,
                         domesticShipping: 0,
                         otherFees: 0,
+                        otherFees2: 0,
                         quantity: 1,
                         country: 'US',
                         zipCode: '',
@@ -3865,6 +3851,7 @@ KH Laser 销售部
                         internationalShipping: parseFloat(document.getElementById('internationalShipping').value) || 0,
                         domesticShipping: parseFloat(document.getElementById('domesticShipping').value) || 0,
                         otherFees: parseFloat(document.getElementById('otherFees').value) || 0,
+                        otherFees2: parseFloat(document.getElementById('otherFees2').value) || 0,
                         quantity: parseInt(document.getElementById('quantity').value) || 1,
                         country: document.getElementById('country').value,
                         zipCode: document.getElementById('zipCode').value,
@@ -4933,6 +4920,7 @@ KH Laser 销售部
                     this.getElement('internationalShipping').value = 0;
                     this.getElement('domesticShipping').value = 0;
                     this.getElement('otherFees').value = 0;
+                    this.getElement('otherFees2').value = 0;
                     this.getElement('quantity').value = 1;
                     this.getElement('country').value = 'US';
                     this.getElement('zipCode').value = '';
@@ -5489,7 +5477,7 @@ KH Laser 销售部
                         });
                         
                         // 费用输入
-                        ['internationalShipping', 'domesticShipping', 'otherFees', 'quantity'].forEach(id => {
+                        ['internationalShipping', 'domesticShipping', 'otherFees', 'otherFees2', 'quantity'].forEach(id => {
                             const element = document.getElementById(id);
                             if (element) {
                                 element.addEventListener('change', (e) => {
@@ -5534,14 +5522,23 @@ KH Laser 销售部
                             button.addEventListener('click', (e) => {
                                 try {
                                     const province = e.target.dataset.province;
-                                    // 1. 更新界面样式（保持视觉反馈）
-                                    document.getElementById('provinceSelect').value = '';
-                                    document.querySelectorAll('[data-province]').forEach(btn => btn.classList.remove('active'));
-                                    e.target.classList.add('active');
-                                    // 2. 更新隐藏 input（唯一数据源）
-                                    document.getElementById('provinceValue').value = province;
-                                    // 3. 让 Controller 处理后续（收集表单、更新 DataModule、重算、渲染）
-                                    KHQuoteSystem.QuoteController.handleFormChange();
+                                    const isActive = e.target.classList.contains('active');
+
+                                    if (isActive) {
+                                        // 取消选中：移除激活样式、清空隐藏字段和国内运费输入框
+                                        e.target.classList.remove('active');
+                                        document.getElementById('provinceSelect').value = '';
+                                        document.getElementById('provinceValue').value = '';
+                                        document.getElementById('domesticShipping').value = '0';
+                                        KHQuoteSystem.QuoteController.handleFormChange();
+                                    } else {
+                                        // 正常选中
+                                        document.getElementById('provinceSelect').value = '';
+                                        document.querySelectorAll('[data-province]').forEach(btn => btn.classList.remove('active'));
+                                        e.target.classList.add('active');
+                                        document.getElementById('provinceValue').value = province;
+                                        KHQuoteSystem.QuoteController.handleFormChange();
+                                    }
                                 } catch (error) {
                                     console.error('选择省份失败:', error);
                                 }
@@ -6085,6 +6082,7 @@ KH Laser 销售部
                 domesticShipping: 0,
                 internationalShipping: 0,
                 otherFee: 0,
+                otherFee2: 0,
                 quantity: 1,
                 province: '',
                 
@@ -6128,7 +6126,8 @@ KH Laser 销售部
                            this.otherPartsPrice +
                            this.domesticShipping +
                            this.internationalShipping +
-                           this.otherFee;
+                           this.otherFee +
+                           this.otherFee2;
                 },
                 
                 // 第二层：计算最终总价（考虑数量）
@@ -6159,6 +6158,7 @@ KH Laser 销售部
                         domesticShipping: this.domesticShipping,
                         internationalShipping: this.internationalShipping,
                         otherFee: this.otherFee,
+                        otherFee2: this.otherFee2,
                         quantity: this.quantity,
                         province: this.province,
                         subtotal: this.subtotal,
@@ -6174,7 +6174,8 @@ KH Laser 销售部
                             quantity: parseInt(document.getElementById('quantity')?.value) || 1,
                             internationalShipping: parseFloat(document.getElementById('internationalShipping')?.value) || 0,
                             domesticShipping: parseFloat(document.getElementById('domesticShipping')?.value) || 0,
-                            otherFee: parseFloat(document.getElementById('otherFees')?.value) || 0
+                            otherFee: parseFloat(document.getElementById('otherFees')?.value) || 0,
+                            otherFee2: parseFloat(document.getElementById('otherFees2')?.value) || 0
                         };
                         
                         // 同步省份
@@ -6184,6 +6185,8 @@ KH Laser 销售部
                             updates.province = provinceBtn.dataset.province;
                         } else if (provinceSelect && provinceSelect.value) {
                             updates.province = provinceSelect.value;
+                        } else {
+                            updates.province = ''; // 没有选中任何省份时，强制置空
                         }
                         
                         this.update(updates);
@@ -6295,6 +6298,7 @@ KH Laser 销售部
                         domesticShipping: 0,
                         internationalShipping: 0,
                         otherFee: 0,
+                        otherFee2: 0,
                         quantity: 1,
                         province: '',
                         subtotal: 0,
@@ -6497,11 +6501,12 @@ KH Laser 销售部
                         const internationalShipping = parseFloat(quoteData.internationalShipping) || 0;
                         const domesticShipping = parseFloat(quoteData.domesticShipping) || 0;
                         const otherFees = parseFloat(quoteData.otherFees) || 0;
+                        const otherFees2 = parseFloat(quoteData.otherFees2) || 0;
 
                         shippingTotal = internationalShipping + domesticShipping;
-                        otherFeesPrice = otherFees;
+                        otherFeesPrice = otherFees + otherFees2;
 
-                        totalCNY += internationalShipping + domesticShipping + otherFees;
+                        totalCNY += internationalShipping + domesticShipping + otherFees + otherFees2;
                         totalCNY *= (parseInt(quoteData.quantity) || 1);
 
                         const totalUSD = Math.ceil(totalCNY / exchangeRate);

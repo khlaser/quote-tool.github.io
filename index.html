@@ -5412,7 +5412,7 @@ Total price: {totalUSD}`,
                         if (priceDetailOtherAccessories) priceDetailOtherAccessories.textContent = `¥${CalculationEngine.formatPrice(state.otherPartsPrice)}`;
                         if (priceDetailInternationalShipping) priceDetailInternationalShipping.textContent = `¥${CalculationEngine.formatPrice(state.internationalShipping)}`;
                         if (priceDetailDomesticShipping) priceDetailDomesticShipping.textContent = `¥${CalculationEngine.formatPrice(state.domesticShipping)}`;
-                        if (priceDetailOtherFees) priceDetailOtherFees.textContent = `¥${CalculationEngine.formatPrice(state.otherFee)}`;
+                        if (priceDetailOtherFees) priceDetailOtherFees.textContent = `¥${CalculationEngine.formatPrice(state.otherFee + state.otherFee2)}`;
                         if (priceDetailTotal) priceDetailTotal.textContent = `¥${CalculationEngine.formatPrice(state.finalTotalCNY)}`;
                         
                     } catch (error) {
@@ -5480,7 +5480,7 @@ Total price: {totalUSD}`,
                         ['internationalShipping', 'domesticShipping', 'otherFees', 'otherFees2', 'quantity'].forEach(id => {
                             const element = document.getElementById(id);
                             if (element) {
-                                element.addEventListener('change', (e) => {
+                                element.addEventListener('input', (e) => {
                                     try {
                                         const value = e.target.value;
                                         const field = e.target.id;

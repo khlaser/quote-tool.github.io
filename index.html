@@ -1908,13 +1908,13 @@
                 </button>
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <strong>警告：</strong>此操作将恢复为系统内置的机器和配件数据，但会保留：
+                    <strong>警告：</strong>此操作将重置以下内容为系统默认值：
                     <ul style="margin: 8px 0 0 20px; font-size: 0.9rem;">
-                        <li>当前汇率设置</li>
-                        <li>自定义模板</li>
-                        <li>历史报价记录</li>
-                        <li>系统设置</li>
+                        <li>机器和配件数据（恢复为内置版本）</li>
+                        <li>报价模板（恢复为A系列和C系列默认模板）</li>
+                        <li>汇率（恢复为6.5）</li>
                     </ul>
+                    <p style="margin-top: 8px;"><strong>历史报价记录将保留。</strong></p>
                 </div>
             </div>
 
@@ -5963,27 +5963,72 @@ Total price: {totalUSD}`,
                         if (resetToDefaultBtn) {
                             resetToDefaultBtn.addEventListener('click', () => {
                                 try {
-                                    if (confirm('确定要恢复默认产品数据吗？\n\n这将重置所有机器、水冷机和配件数据为系统内置版本。\n\n您的历史记录、模板和设置将保留。')) {
+                                    if (confirm('确定要恢复默认产品数据吗？\n\n这将重置所有机器、水冷机和配件数据为系统内置版本。\n\n模板和汇率将恢复为默认值，历史报价记录将保留。')) {
                                         UIModule.showLoading();
                                         
-                                        // 保存当前的非产品数据
+                                        // 仅保存历史记录和最后备份时间
                                         const currentData = DataModule.getAllData();
-                                        const savedTemplates = [...(currentData?.templates || [])];
                                         const savedHistory = [...(currentData?.quoteHistory || [])];
-                                        const savedExchangeRate = currentData?.exchangeRate || 6.5;
                                         const savedLastBackupTime = currentData?.lastBackupTime;
                                         
                                         // 清除localStorage中的产品相关数据
                                         localStorage.removeItem('khLaserQuoteData');
                                         
-                                        // 重新加载默认数据
+                                        // 重新加载默认数据（机器和产品）
                                         DataModule.loadDefaultData();
                                         
-                                        // 恢复保存的非产品数据
-                                        DataModule.data.templates = savedTemplates;
+                                        // 恢复历史记录
                                         DataModule.data.quoteHistory = savedHistory;
-                                        DataModule.data.exchangeRate = savedExchangeRate;
                                         DataModule.data.lastBackupTime = savedLastBackupTime;
+                                        
+                                        // 重置模板为默认模板（与初始化时一致）
+                                        DataModule.data.templates = [
+                                            {
+                                                id: 'template1',
+                                                name: 'A系列报价模板',
+                                                content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+with {waterCooler} industry chiller  {standardAccessories}
+
+1. Ruida 8445 control system
+2. Linear Guides 15mm
+3. Red light positioning
+4. 57 stepper motor
+5. Leadshine driver
+6. Air controling system
+7. Honeycomb platform
+8. Plywood box packaging
+9. Electric up and down lift
+==============================
+Total price: {totalUSD}`,
+                                                lastUsed: null
+                                            },
+                                            {
+                                                id: 'template2',
+                                                name: 'C系列报价模板',
+                                                content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+with {waterCooler} industry chiller  {standardAccessories}
+
+1. Ruida 8445 control system
+2. Linear Guides 15mm
+3. Red light positioning
+4. Leadshine motor and driver
+5. Air controling system
+6. Honeycomb platform
+7. Plywood box packaging
+8. Speed control wheel
+9. Electric up and down lift
+===================================
+Total price: {totalUSD}`,
+                                                lastUsed: null
+                                            }
+                                        ];
+                                        
+                                        // 重置汇率为默认值 6.5
+                                        DataModule.data.exchangeRate = 6.5;
                                         
                                         // 保存到localStorage
                                         DataModule.saveToLocalStorage();
@@ -5992,7 +6037,7 @@ Total price: {totalUSD}`,
                                         setTimeout(() => {
                                             UIModule.initUI();
                                             UIModule.hideLoading();
-                                            NotificationModule.showSuccess('默认产品数据已恢复！', '您的模板、历史记录和设置已保留。');
+                                            NotificationModule.showSuccess('默认数据已恢复！', '模板和汇率已重置，历史记录已保留。');
                                         }, 500);
                                     }
                                 } catch (error) {

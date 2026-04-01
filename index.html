@@ -2000,7 +2000,7 @@
         </div>
         
         <footer>
-            <p>© 2026 KH Laser 报价系统 | 版本 2.8.0</p>
+            <p>© 2026 KH Laser 报价系统 | 版本 2.8.5</p>
         </footer>
     </div>
 
@@ -2817,7 +2817,7 @@
             // ==================== DataModule ====================
             const DataModule = {
                 data: {
-                    exchangeRate: 6.5,
+                    exchangeRate: 6.6,
                     machines: [],
                     products: {
                         waterCoolers: [],
@@ -2842,7 +2842,7 @@ with {waterCooler} industry chiller  {standardAccessories}
 6. Air controling system
 7. Honeycomb platform
 8. Plywood box packaging
-9. Electric up and down lift
+9. Electric Lifting Platform 22cm
 ==============================
 Total price: {totalUSD}`,
                             lastUsed: null
@@ -2863,8 +2863,18 @@ with {waterCooler} industry chiller  {standardAccessories}
 6. Honeycomb platform
 7. Plywood box packaging
 8. Speed control wheel
-9. Electric up and down lift
+9. Electric Lifting Platform 45cm
 ====================================
+Total price: {totalUSD}`,
+                            lastUsed: null
+                        },
+                        { 
+                            id: 'template3', 
+                            name: '通用报价模板', 
+                            content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+======================
 Total price: {totalUSD}`,
                             lastUsed: null
                         }
@@ -3193,6 +3203,7 @@ Total price: {totalUSD}`,
                             quantity: currentQuote.quantity,
                             country: currentQuote.country,
                             zipCode: currentQuote.zipCode,
+                            selectedProvince: currentQuote.selectedProvince,
                             priceSource: currentQuote.priceSource,
                             totalCNY: currentQuote.totalCNY,
                             totalUSD: currentQuote.totalUSD,
@@ -3391,6 +3402,43 @@ Total price: {totalUSD}`,
                     } catch (error) {
                         console.error('获取数据统计失败:', error);
                         return { machines: 0, waterCoolers: 0, accessories: 0, otherAccessories: 0, templates: 0, history: 0, maxHistory: 10 };
+                    }
+                },
+                
+                // 根据系列名称返回匹配的模板对象（自动选择用）
+                getTemplateForSeries: function(series) {
+                    try {
+                        if (!series) return null;
+                        
+                        const templates = this.data.templates;
+                        if (!templates || templates.length === 0) return null;
+                        
+                        // 定义系列与模板名称关键词的映射
+                        const seriesMap = {
+                            'A': 'A系列',
+                            'C': 'C系列'
+                            // 可扩展其他系列映射
+                        };
+                        
+                        const targetKeyword = seriesMap[series] || null;
+                        
+                        // 优先精确匹配模板名称中包含关键词的模板
+                        if (targetKeyword) {
+                            const matchedTemplate = templates.find(t => t.name && t.name.includes(targetKeyword));
+                            if (matchedTemplate) return matchedTemplate;
+                        }
+                        
+                        // 回退：查找名称中包含“通用”或“默认”的模板
+                        const fallbackTemplate = templates.find(t => 
+                            t.name && (t.name.includes('通用') || t.name.includes('默认'))
+                        );
+                        if (fallbackTemplate) return fallbackTemplate;
+                        
+                        // 最终回退：返回第一个模板
+                        return templates[0];
+                    } catch (error) {
+                        console.error('根据系列获取模板失败:', error);
+                        return null;
                     }
                 }
             };
@@ -4056,14 +4104,12 @@ Total price: {totalUSD}`,
                                 
                                 if (series) {
                                     modelSelect.disabled = false;
-                                    
-                                    // 使用DocumentFragment优化
+                                    // 使用 DocumentFragment 优化型号下拉框
                                     const fragment = document.createDocumentFragment();
                                     const defaultOption = document.createElement('option');
                                     defaultOption.value = '';
                                     defaultOption.textContent = '请选择型号';
                                     fragment.appendChild(defaultOption);
-                                    
                                     const models = DataModule.getModelsBySeries(series);
                                     models.forEach(model => {
                                         const option = document.createElement('option');
@@ -4071,9 +4117,18 @@ Total price: {totalUSD}`,
                                         option.textContent = model;
                                         fragment.appendChild(option);
                                     });
-                                    
                                     modelSelect.innerHTML = '';
                                     modelSelect.appendChild(fragment);
+                                    
+                                    // ========== 新增：自动选择模板 ==========
+                                    const matchedTemplate = DataModule.getTemplateForSeries(series);
+                                    if (matchedTemplate) {
+                                        DataModule.selectTemplate(matchedTemplate.id);
+                                        // 刷新模板显示
+                                        KHQuoteSystem.UIModule.updateSelectedTemplateDisplay();
+                                    }
+                                    // =====================================
+                                    
                                 } else {
                                     modelSelect.disabled = true;
                                     modelSelect.innerHTML = '<option value="">请先选择系列</option>';
@@ -4089,7 +4144,7 @@ Total price: {totalUSD}`,
                                     selectedMachine: null
                                 });
                                 CalculationEngine.recalculateAll();
-                                KHQuoteSystem.UIModule.renderAll(); // 新增
+                                KHQuoteSystem.UIModule.renderAll();
                             } catch (error) {
                                 console.error('处理系列选择变更失败:', error);
                                 NotificationModule.showError('处理选择失败');
@@ -4118,12 +4173,7 @@ Total price: {totalUSD}`,
                                     powers.forEach(powerData => {
                                         const option = document.createElement('option');
                                         option.value = powerData.power;
-                                        
-                                        let price = powerData.price || 0;
-                                        
-                                        if (priceSource === 'tier2' && powerData.priceTier2) price = powerData.priceTier2;
-                                        else if (priceSource === 'tier3' && powerData.priceTier3) price = powerData.priceTier3;
-                                        
+                                        const price = window.CalculationEngine.getUnitPriceById('machine', powerData);
                                         option.textContent = `${powerData.power} (¥${QuoteModule.formatPrice(price)})`;
                                         option.dataset.powerData = JSON.stringify(powerData);
                                         fragment.appendChild(option);
@@ -4646,27 +4696,46 @@ Total price: {totalUSD}`,
                     }
                 },
                 
-                // 内部方法，用于绑定其他配件事件
-                bindOtherAccessoriesEvents() {
+                bindOtherAccessoriesEvents: function() {
                     try {
                         const container = this.getElement('otherAccessoryOptions');
                         if (!container) return;
                         
-                        // 绑定点击事件
                         const options = container.querySelectorAll('.checkbox-option');
                         options.forEach(option => {
-                            option.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                this.handleOtherAccessoryClick(option);
-                            });
-                            
                             const checkbox = option.querySelector('input[type="checkbox"]');
-                            if (checkbox) {
-                                checkbox.addEventListener('click', (e) => e.stopPropagation());
-                                checkbox.addEventListener('change', (e) => {
-                                    this.handleOtherAccessoryClick(option);
-                                });
-                            }
+                            if (!checkbox) return;
+                            
+                            // 移除旧事件避免重复
+                            checkbox.removeEventListener('change', checkbox._changeHandler);
+                            option.removeEventListener('click', option._clickHandler);
+                            
+                            // change 事件：同步样式并调用更新
+                            const changeHandler = (e) => {
+                                if (checkbox.checked) {
+                                    option.classList.add('selected');
+                                } else {
+                                    option.classList.remove('selected');
+                                }
+                                this.updateOtherAccessoriesSelection();
+                            };
+                            checkbox._changeHandler = changeHandler;
+                            checkbox.addEventListener('change', changeHandler);
+                            
+                            // 整行点击处理：若点击目标不是 checkbox 或 label，则手动切换
+                            const clickHandler = (e) => {
+                                if (e.target === checkbox || 
+                                    checkbox.contains(e.target) || 
+                                    e.target.tagName === 'LABEL' || 
+                                    (e.target.parentElement && e.target.parentElement.tagName === 'LABEL')) {
+                                    return;
+                                }
+                                checkbox.checked = !checkbox.checked;
+                                const changeEvent = new Event('change', { bubbles: true });
+                                checkbox.dispatchEvent(changeEvent);
+                            };
+                            option._clickHandler = clickHandler;
+                            option.addEventListener('click', clickHandler);
                         });
                     } catch (error) {
                         console.error('绑定其他配件事件失败:', error);
@@ -4718,55 +4787,78 @@ Total price: {totalUSD}`,
                     return div.innerHTML;
                 },
                 
-                bindProductSelectionEvents() {
+                bindProductSelectionEvents: function() {
                     try {
-                        const handleOptionClick = (option, isCheckbox = false) => {
-                            try {
-                                if (isCheckbox) {
-                                    const checkbox = option.querySelector('input[type="checkbox"]');
-                                    if (checkbox) {
-                                        checkbox.checked = !checkbox.checked;
-                                        option.classList.toggle('selected');
-                                        KHQuoteSystem.QuoteController.handleFormChange();
-                                    }
-                                } else {
-                                    const radio = option.querySelector('input[type="radio"]');
-                                    if (radio) {
-                                        radio.checked = true;
-                                        document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
-                                        option.classList.add('selected');
-                                        KHQuoteSystem.QuoteController.handleFormChange();
-                                    }
-                                }
-                            } catch (error) {
-                                console.error('处理选项点击失败:', error);
+                        // 水冷机选项（radio）处理
+                        const handleRadioClick = (option) => {
+                            const radio = option.querySelector('input[type="radio"]');
+                            if (radio) {
+                                radio.checked = true;
+                                document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+                                option.classList.add('selected');
+                                KHQuoteSystem.QuoteController.handleFormChange();
                             }
                         };
                         
                         document.querySelectorAll('#waterCoolerOptions .radio-option').forEach(option => {
-                            option.addEventListener('click', (e) => {
+                            // 移除旧事件避免重复
+                            option.removeEventListener('click', option._clickHandler);
+                            const clickHandler = (e) => {
                                 e.stopPropagation();
-                                handleOptionClick(option, false);
-                            });
+                                handleRadioClick(option);
+                            };
+                            option._clickHandler = clickHandler;
+                            option.addEventListener('click', clickHandler);
                             
                             const radioInput = option.querySelector('input[type="radio"]');
                             if (radioInput) {
-                                radioInput.addEventListener('click', (e) => e.stopPropagation());
-                                radioInput.addEventListener('change', (e) => handleOptionClick(option, false));
+                                radioInput.removeEventListener('click', radioInput._clickStop);
+                                radioInput._clickStop = (e) => e.stopPropagation();
+                                radioInput.addEventListener('click', radioInput._clickStop);
+                                radioInput.removeEventListener('change', radioInput._changeHandler);
+                                radioInput._changeHandler = () => handleRadioClick(option);
+                                radioInput.addEventListener('change', radioInput._changeHandler);
                             }
                         });
                         
+                        // 配件选择（checkbox）—— 增强整行点击区域
                         document.querySelectorAll('#accessoryOptions .checkbox-option').forEach(option => {
-                            option.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                handleOptionClick(option, true);
-                            });
-                            
                             const checkboxInput = option.querySelector('input[type="checkbox"]');
-                            if (checkboxInput) {
-                                checkboxInput.addEventListener('click', (e) => e.stopPropagation());
-                                checkboxInput.addEventListener('change', (e) => handleOptionClick(option, true));
-                            }
+                            if (!checkboxInput) return;
+                            
+                            // 移除旧事件避免重复
+                            checkboxInput.removeEventListener('change', checkboxInput._changeHandler);
+                            option.removeEventListener('click', option._clickHandler);
+                            
+                            // change 事件：同步样式并触发报价更新
+                            const changeHandler = (e) => {
+                                if (checkboxInput.checked) {
+                                    option.classList.add('selected');
+                                } else {
+                                    option.classList.remove('selected');
+                                }
+                                KHQuoteSystem.QuoteController.handleFormChange();
+                            };
+                            checkboxInput._changeHandler = changeHandler;
+                            checkboxInput.addEventListener('change', changeHandler);
+                            
+                            // 整行点击处理：若点击目标不是 checkbox 或 label 本身，则手动切换状态
+                            const clickHandler = (e) => {
+                                // 如果点击的是 checkbox 或其 label，让原生行为处理，避免重复
+                                if (e.target === checkboxInput || 
+                                    checkboxInput.contains(e.target) || 
+                                    e.target.tagName === 'LABEL' || 
+                                    (e.target.parentElement && e.target.parentElement.tagName === 'LABEL')) {
+                                    return;
+                                }
+                                // 手动翻转复选框状态
+                                checkboxInput.checked = !checkboxInput.checked;
+                                // 手动触发 change 事件，使样式和报价同步
+                                const changeEvent = new Event('change', { bubbles: true });
+                                checkboxInput.dispatchEvent(changeEvent);
+                            };
+                            option._clickHandler = clickHandler;
+                            option.addEventListener('click', clickHandler);
                         });
                     } catch (error) {
                         console.error('绑定产品选择事件失败:', error);
@@ -6024,11 +6116,21 @@ with {waterCooler} industry chiller  {standardAccessories}
 ===================================
 Total price: {totalUSD}`,
                                                 lastUsed: null
+                                            },
+                                            {
+                                                id: 'template3',
+                                                name: '通用报价模板',
+                                                content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+======================
+Total price: {totalUSD}`,
+                                                lastUsed: null
                                             }
                                         ];
                                         
                                         // 重置汇率为默认值 6.5
-                                        DataModule.data.exchangeRate = 6.5;
+                                        DataModule.data.exchangeRate = 6.6;
                                         
                                         // 保存到localStorage
                                         DataModule.saveToLocalStorage();
@@ -6247,12 +6349,22 @@ Total price: {totalUSD}`,
                         const products = KHQuoteSystem.DataModule.getProducts();
                         const priceSource = currentQuote.priceSource || 'tier1';
                         
+                        // 同步基础数据
+                        this.quantity = currentQuote.quantity || 1;
+                        this.internationalShipping = currentQuote.internationalShipping || 0;
+                        this.domesticShipping = currentQuote.domesticShipping || 0;
+                        this.otherFee = currentQuote.otherFees || 0;
+                        this.otherFee2 = currentQuote.otherFees2 || 0;
+                        this.province = currentQuote.selectedProvince || '';
+                        
                         // 机器价格
                         if (currentQuote.selectedMachine) {
                             this.machinePrice = CalculationEngine.getPriceByTier(
                                 currentQuote.selectedMachine, 
                                 priceSource
                             );
+                        } else {
+                            this.machinePrice = 0;
                         }
                         
                         // 水冷机价格
@@ -6294,13 +6406,11 @@ Total price: {totalUSD}`,
             
             // 统一重新计算函数（外部调用入口）
             function recalculateAll() {
-                // 1. 从DataModule同步基础数据
+                // 1. 从DataModule同步基础数据（已包含用户输入的最新值）
                 AppState.syncFromDataModule();
                 
-                // 2. 从DOM同步用户输入
-                AppState.syncFromDOM();
-                
-                // 3. 特殊处理：计算国内运费（如果省份和机器信息存在）
+                // 2. 特殊处理：计算国内运费（如果省份和机器信息存在）
+                // 注意：此时 AppState.province 应该已经从 DataModule.currentQuote.selectedProvince 同步过来
                 if (AppState.province) {
                     const currentQuote = KHQuoteSystem.DataModule.getCurrentQuote();
                     if (currentQuote.selectedMachine && currentQuote.selectedMachine.cbm) {
@@ -6320,7 +6430,7 @@ Total price: {totalUSD}`,
                     }
                 }
                 
-                // 4. 触发完整重新计算
+                // 3. 触发完整重新计算
                 return AppState.recalculate();
             }
             

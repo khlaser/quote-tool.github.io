@@ -6350,11 +6350,11 @@ Total price: {totalUSD}`,
                         const priceSource = currentQuote.priceSource || 'tier1';
                         
                         // 同步基础数据
-                        this.quantity = currentQuote.quantity || 1;
-                        this.internationalShipping = currentQuote.internationalShipping || 0;
-                        this.domesticShipping = currentQuote.domesticShipping || 0;
-                        this.otherFee = currentQuote.otherFees || 0;
-                        this.otherFee2 = currentQuote.otherFees2 || 0;
+                        this.quantity = parseInt(currentQuote.quantity) || 1;
+                        this.internationalShipping = parseFloat(currentQuote.internationalShipping) || 0;
+                        this.domesticShipping = parseFloat(currentQuote.domesticShipping) || 0;
+                        this.otherFee = parseFloat(currentQuote.otherFees) || 0;
+                        this.otherFee2 = parseFloat(currentQuote.otherFees2) || 0;
                         this.province = currentQuote.selectedProvince || '';
                         
                         // 机器价格

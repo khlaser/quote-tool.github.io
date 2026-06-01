@@ -1651,22 +1651,21 @@
                         <!-- 第二行：国际运费、国家、邮编（保持不变的三列等宽） -->
                         <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                             <div style="flex: 1;">
-                                <label for="internationalShipping" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国际运费 (CNY)</label>
-                                <input type="number" id="internationalShipping" step="0.01" min="0" value="0" style="width: 100%;">
+                                <label style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国际运费类型</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn intl-type-btn" data-intl-type="volumeWeight" style="flex: 1;">体积重</button>
+                                    <button class="btn intl-type-btn" data-intl-type="cbm" style="flex: 1;">CBM</button>
+                                    <button class="btn intl-type-btn" data-intl-type="actualWeight" style="flex: 1;">实重</button>
+                                </div>
+                                <input type="hidden" id="intlShippingType" value="volumeWeight">
                             </div>
                             <div style="flex: 1;">
-                                <label for="country" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国家</label>
-                                <select id="country" style="width: 100%;">
-                                    <option value="US">美国</option>
-                                    <option value="CN">中国</option>
-                                    <option value="DE">德国</option>
-                                    <option value="JP">日本</option>
-                                    <option value="other">其他</option>
-                                </select>
+                                <label for="intlUnitPrice" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">单价 (CNY/单位)</label>
+                                <input type="number" id="intlUnitPrice" step="0.01" min="0" value="0" style="width: 100%;">
                             </div>
                             <div style="flex: 1;">
-                                <label for="zipCode" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">邮编</label>
-                                <input type="text" id="zipCode" placeholder="请输入邮编" style="width: 100%;">
+                                <label for="internationalShippingDisplay" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国际运费 (CNY)</label>
+                                <input type="text" id="internationalShipping" readonly style="background:#f5f5f5; cursor:default; width: 100%;">
                             </div>
                         </div>
 
@@ -1911,8 +1910,8 @@
                     <strong>警告：</strong>此操作将重置以下内容为系统默认值：
                     <ul style="margin: 8px 0 0 20px; font-size: 0.9rem;">
                         <li>机器和配件数据（恢复为内置版本）</li>
-                        <li>报价模板（恢复为A系列和C系列默认模板）</li>
-                        <li>汇率（恢复为6.5）</li>
+                        <li>报价模板（恢复为A系列、C系列、通用模板）</li>
+                        <li>汇率（恢复为6.6）</li>
                     </ul>
                     <p style="margin-top: 8px;"><strong>历史报价记录将保留。</strong></p>
                 </div>
@@ -2810,6 +2809,64 @@
                 ]
             }
         };
+
+        const DEFAULT_TEMPLATES = [
+            {
+                id: 'template1',
+                name: 'A系列报价模板',
+                content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+with {waterCooler} industry chiller  {standardAccessories}
+
+1. Ruida 8445 control system
+2. Linear Guides 15mm
+3. Red light positioning
+4. 57 stepper motor
+5. Leadshine driver
+6.  250/550W fans and 00？air pump
+7. Honeycomb platform
+8. Plywood box packaging
+9. Electric Lifting Platform 22cm
+==============================
+Total price: {totalUSD}`,
+                lastUsed: null
+            },
+            {
+                id: 'template2',
+                name: 'C系列报价模板',
+                content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+with {waterCooler} industry chiller,  {standardAccessories}
+
+1. Ruida 8445 control system
+2. Linear Guides 15mm
+3. Red light positioning
+4. Big 57 motor and  leadshine driver
+5. 550W fans and 00？ air pump 
+6. Honeycomb platform
+7. Plywood box packaging
+8. Speed control wheel
+9. Electric Lifting Platform 45cm
+====================================
+Total price: {totalUSD}`,
+                lastUsed: null
+            },
+            {
+                id: 'template3',
+                name: '通用报价模板',
+                content: `Model {machineModel}
+packing size: {packingSize} cm
+weight: {actualWeight}
+======================
+Total price: {totalUSD}`,
+                lastUsed: null
+            }
+        ];
+
+        const DEFAULT_EXCHANGE_RATE = 6.6;
+
         // ==================== 内置数据区域结束 ====================
 
         // 模块化报价系统
@@ -2839,7 +2896,7 @@ with {waterCooler} industry chiller  {standardAccessories}
 3. Red light positioning
 4. 57 stepper motor
 5. Leadshine driver 
-6. Air controling system
+6. Air assist system
 7. Honeycomb platform
 8. Plywood box packaging
 9. Electric Lifting Platform 22cm
@@ -2853,13 +2910,13 @@ Total price: {totalUSD}`,
                             content: `Model {machineModel}
 packing size: {packingSize} cm
 weight: {actualWeight} 
-with {waterCooler} industry chiller  {standardAccessories}
+with {waterCooler} industry chiller,  {standardAccessories}
 
 1. Ruida 8445 control system
 2. Linear Guides 15mm
 3. Red light positioning
-4. Leadshine motor and driver
-5. Air controling system
+4. Big 57 motor and  leadshine driver
+5. Air assist system
 6. Honeycomb platform
 7. Plywood box packaging
 8. Speed control wheel
@@ -2892,8 +2949,6 @@ Total price: {totalUSD}`,
                         otherFees: 0,
                         otherFees2: 0,
                         quantity: 1,
-                        country: 'US',
-                        zipCode: '',
                         priceSource: 'tier1',
                         totalCNY: 0,
                         totalUSD: 0,
@@ -3178,18 +3233,14 @@ Total price: {totalUSD}`,
                 // 修复：使用深拷贝保存当前报价到历史记录
                 saveCurrentQuoteToHistory() {
                     try {
-                        // 使用深拷贝确保数据独立性
                         const currentQuote = this.deepClone(this.data.currentQuote);
                         
-                        // 生成历史记录ID
                         const historyId = `quote_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                         
-                        // 创建独立的深拷贝历史记录项
                         const historyItem = {
                             id: historyId,
                             timestamp: new Date().toISOString(),
                             quoteNumber: QuoteModule.generateQuoteNumber(),
-                            // 深拷贝所有报价数据
                             selectedSeries: currentQuote.selectedSeries,
                             selectedModel: currentQuote.selectedModel,
                             selectedPower: currentQuote.selectedPower,
@@ -3201,8 +3252,8 @@ Total price: {totalUSD}`,
                             domesticShipping: currentQuote.domesticShipping,
                             otherFees: currentQuote.otherFees,
                             quantity: currentQuote.quantity,
-                            country: currentQuote.country,
-                            zipCode: currentQuote.zipCode,
+                            intlShippingType: currentQuote.intlShippingType,
+                            intlUnitPrice: currentQuote.intlUnitPrice,
                             selectedProvince: currentQuote.selectedProvince,
                             priceSource: currentQuote.priceSource,
                             totalCNY: currentQuote.totalCNY,
@@ -3211,10 +3262,8 @@ Total price: {totalUSD}`,
                             selectedTemplateId: currentQuote.selectedTemplateId
                         };
                         
-                        // 添加到历史记录的开头（最新的在最前面）
                         this.data.quoteHistory.unshift(historyItem);
                         
-                        // 限制历史记录最多10条
                         if (this.data.quoteHistory.length > this.data.maxHistoryItems) {
                             this.data.quoteHistory = this.data.quoteHistory.slice(0, this.data.maxHistoryItems);
                         }
@@ -3306,24 +3355,46 @@ Total price: {totalUSD}`,
                         const savedData = localStorage.getItem('khLaserQuoteData');
                         if (savedData) {
                             const parsedData = JSON.parse(savedData);
-                            // 优先使用本地存储的数据
                             this.data.exchangeRate = parsedData.exchangeRate || this.data.exchangeRate;
                             this.data.machines = parsedData.machines || [];
                             this.data.products = parsedData.products || this.data.products;
-                            this.data.quoteHistory = parsedData.quoteHistory || [];
                             this.data.templates = parsedData.templates || this.data.templates;
                             this.data.lastBackupTime = parsedData.lastBackupTime || null;
                             this.data.maxHistoryItems = parsedData.maxHistoryItems || 10;
-                            // 重要：不恢复currentQuote，始终使用全新currentQuote
+                            
+                            this.data.quoteHistory = (parsedData.quoteHistory || []).map(item => {
+                                return {
+                                    id: item.id,
+                                    timestamp: item.timestamp,
+                                    quoteNumber: item.quoteNumber,
+                                    selectedSeries: item.selectedSeries,
+                                    selectedModel: item.selectedModel,
+                                    selectedPower: item.selectedPower,
+                                    selectedMachine: item.selectedMachine,
+                                    selectedWaterCooler: item.selectedWaterCooler,
+                                    selectedAccessories: item.selectedAccessories || [],
+                                    selectedOtherAccessories: item.selectedOtherAccessories || [],
+                                    internationalShipping: item.internationalShipping || 0,
+                                    domesticShipping: item.domesticShipping || 0,
+                                    otherFees: item.otherFees || 0,
+                                    quantity: item.quantity || 1,
+                                    intlShippingType: item.intlShippingType || 'volumeWeight',
+                                    intlUnitPrice: item.intlUnitPrice || 0,
+                                    selectedProvince: item.selectedProvince || '',
+                                    priceSource: item.priceSource || 'tier1',
+                                    totalCNY: item.totalCNY || 0,
+                                    totalUSD: item.totalUSD || 0,
+                                    selectedTemplateId: item.selectedTemplateId
+                                };
+                            });
+                            
                             return true;
                         } else {
-                            // 如果没有本地存储数据，则使用内置的默认数据
                             this.loadDefaultData();
                             return true;
                         }
                     } catch (error) {
                         console.error('加载本地数据失败:', error);
-                        // 加载失败时也使用内置数据
                         this.loadDefaultData();
                         return false;
                     }
@@ -3332,14 +3403,49 @@ Total price: {totalUSD}`,
                 // 新增：加载默认数据
                 loadDefaultData() {
                     try {
-                        // 使用内置的DEFAULT_DATA
-                        this.data.machines = [...DEFAULT_DATA.machines];
-                        this.data.products.waterCoolers = [...DEFAULT_DATA.products.waterCoolers];
-                        this.data.products.accessories = [...DEFAULT_DATA.products.accessories];
-                        this.data.products.otherAccessories = [...DEFAULT_DATA.products.otherAccessories];
+                        this.data.machines = JSON.parse(JSON.stringify(DEFAULT_DATA.machines));
+                        this.data.products = {
+                            waterCoolers: JSON.parse(JSON.stringify(DEFAULT_DATA.products.waterCoolers)),
+                            accessories: JSON.parse(JSON.stringify(DEFAULT_DATA.products.accessories)),
+                            otherAccessories: JSON.parse(JSON.stringify(DEFAULT_DATA.products.otherAccessories))
+                        };
                         return true;
                     } catch (error) {
                         console.error('加载默认数据失败:', error);
+                        return false;
+                    }
+                },
+                
+                resetAllToDefault(keepHistory = true) {
+                    try {
+                        const savedHistory = keepHistory ? [...this.data.quoteHistory] : [];
+                        const savedLastBackupTime = keepHistory ? this.data.lastBackupTime : null;
+                        
+                        this.data.machines = JSON.parse(JSON.stringify(DEFAULT_DATA.machines));
+                        
+                        this.data.products = {
+                            waterCoolers: JSON.parse(JSON.stringify(DEFAULT_DATA.products.waterCoolers)),
+                            accessories: JSON.parse(JSON.stringify(DEFAULT_DATA.products.accessories)),
+                            otherAccessories: JSON.parse(JSON.stringify(DEFAULT_DATA.products.otherAccessories))
+                        };
+                        
+                        this.data.templates = JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
+                        
+                        this.data.exchangeRate = DEFAULT_EXCHANGE_RATE;
+                        
+                        if (keepHistory) {
+                            this.data.quoteHistory = savedHistory;
+                            this.data.lastBackupTime = savedLastBackupTime;
+                        } else {
+                            this.data.quoteHistory = [];
+                            this.data.lastBackupTime = null;
+                        }
+                        
+                        this.saveToLocalStorage();
+                        
+                        return true;
+                    } catch (error) {
+                        console.error('重置所有默认数据失败:', error);
                         return false;
                     }
                 },
@@ -3760,8 +3866,6 @@ Total price: {totalUSD}`,
                     document.getElementById('domesticShipping').value = 0;
                     document.getElementById('otherFees').value = 0;
                     document.getElementById('quantity').value = 1;
-                    document.getElementById('country').value = 'US';
-                    document.getElementById('zipCode').value = '';
 
                     // 省份选择重置
                     const provinceSelect = document.getElementById('provinceSelect');
@@ -3852,8 +3956,18 @@ Total price: {totalUSD}`,
                     document.getElementById('domesticShipping').value = quote.domesticShipping || 0;
                     document.getElementById('otherFees').value = quote.otherFees || 0;
                     document.getElementById('quantity').value = quote.quantity || 1;
-                    if (quote.country) document.getElementById('country').value = quote.country;
-                    if (quote.zipCode) document.getElementById('zipCode').value = quote.zipCode;
+                    const intlType = quote.intlShippingType || 'volumeWeight';
+                    document.getElementById('intlShippingType').value = intlType;
+                    document.getElementById('intlUnitPrice').value = quote.intlUnitPrice || 0;
+                    document.querySelectorAll('.intl-type-btn').forEach(btn => {
+                        btn.classList.remove('active', 'btn-primary');
+                        btn.classList.add('btn-secondary');
+                    });
+                    const activeBtn = document.querySelector(`.intl-type-btn[data-intl-type="${intlType}"]`);
+                    if (activeBtn) {
+                        activeBtn.classList.add('active', 'btn-primary');
+                        activeBtn.classList.remove('btn-secondary');
+                    }
 
                     // 6. 设置价格来源
                     document.querySelectorAll('.price-source-option').forEach(opt => opt.classList.remove('active'));
@@ -3901,8 +4015,8 @@ Total price: {totalUSD}`,
                         otherFees: parseFloat(document.getElementById('otherFees').value) || 0,
                         otherFees2: parseFloat(document.getElementById('otherFees2').value) || 0,
                         quantity: parseInt(document.getElementById('quantity').value) || 1,
-                        country: document.getElementById('country').value,
-                        zipCode: document.getElementById('zipCode').value,
+                        intlShippingType: document.getElementById('intlShippingType').value,
+                        intlUnitPrice: parseFloat(document.getElementById('intlUnitPrice').value) || 0,
                         selectedProvince: document.getElementById('provinceValue').value,
                         priceSource: (() => {
                             const activeSource = document.querySelector('.price-source-option.active');
@@ -3948,8 +4062,6 @@ Total price: {totalUSD}`,
                             internationalShipping: document.getElementById('internationalShipping'),
                             domesticShipping: document.getElementById('domesticShipping'),
                             otherFees: document.getElementById('otherFees'),
-                            country: document.getElementById('country'),
-                            zipCode: document.getElementById('zipCode'),
                             historyList: document.getElementById('historyList'),
                             selectedTemplateInfo: document.getElementById('selectedTemplateInfo'),
                             noTemplateSelected: document.getElementById('noTemplateSelected'),
@@ -4003,6 +4115,7 @@ Total price: {totalUSD}`,
                       this.updateHistoryDisplay();
                       this.updateSettingsStats();
                       this.initCollapseEvents();
+                      this.initInternationalTypeButtons();
                       this.updateSelectedTemplateDisplay();
                       this.initOtherAccessoriesSearch();
                       this.initHistoryPanel();
@@ -4015,7 +4128,6 @@ Total price: {totalUSD}`,
                 // 初始化全新currentQuote
                 initNewCurrentQuote() {
                     try {
-                        // 创建全新的currentQuote对象
                         const newCurrentQuote = {
                             selectedSeries: '',
                             selectedModel: '',
@@ -4028,8 +4140,8 @@ Total price: {totalUSD}`,
                             domesticShipping: 0,
                             otherFees: 0,
                             quantity: 1,
-                            country: 'US',
-                            zipCode: '',
+                            intlShippingType: 'volumeWeight',
+                            intlUnitPrice: 0,
                             selectedProvince: '',
                             priceSource: 'tier1',
                             totalCNY: 0,
@@ -4038,7 +4150,6 @@ Total price: {totalUSD}`,
                             selectedTemplateId: null
                         };
                         
-                        // 更新DataModule中的currentQuote
                         DataModule.updateCurrentQuote(newCurrentQuote);
                     } catch (error) {
                         console.error('初始化全新currentQuote失败:', error);
@@ -4217,6 +4328,7 @@ Total price: {totalUSD}`,
                                     });
                                     
                                     this.showMachineInfo(powerData);
+                                    KHQuoteSystem.UIModule.updateInternationalShipping();
                                 } else {
                                     DataModule.updateCurrentQuote({ 
                                         selectedPower: '',
@@ -4226,7 +4338,7 @@ Total price: {totalUSD}`,
                                 }
                                 
                                 CalculationEngine.recalculateAll();
-                                KHQuoteSystem.UIModule.renderAll(); // 新增
+                                KHQuoteSystem.UIModule.renderAll();
                             } catch (error) {
                                 console.error('处理功率选择变更失败:', error);
                                 NotificationModule.showError('处理选择失败');
@@ -5014,8 +5126,8 @@ Total price: {totalUSD}`,
                     this.getElement('otherFees').value = 0;
                     this.getElement('otherFees2').value = 0;
                     this.getElement('quantity').value = 1;
-                    this.getElement('country').value = 'US';
-                    this.getElement('zipCode').value = '';
+                    document.getElementById('intlShippingType').value = 'volumeWeight';
+                    document.getElementById('intlUnitPrice').value = 0;
 
                     const provinceSelect = document.getElementById('provinceSelect');
                     if (provinceSelect) provinceSelect.value = '';
@@ -5512,16 +5624,53 @@ Total price: {totalUSD}`,
                     }
                 },
                 
-                // 统一渲染方法，为后续单点刷新做准备
+                updateInternationalShipping() {
+                    const currentQuote = DataModule.getCurrentQuote();
+                    const machine = currentQuote.selectedMachine;
+                    const type = document.getElementById('intlShippingType').value;
+                    const unitPrice = parseFloat(document.getElementById('intlUnitPrice').value) || 0;
+                    const shipping = CalculationEngine.calcInternationalShipping(machine, type, unitPrice);
+                    document.getElementById('internationalShipping').value = shipping;
+                    DataModule.updateCurrentQuote({ internationalShipping: shipping });
+                    DataModule.updateCurrentQuote({ intlShippingType: type, intlUnitPrice: unitPrice });
+                    CalculationEngine.recalculateAll();
+                    this.renderAll();
+                },
+                
+                initInternationalTypeButtons() {
+                    const btns = document.querySelectorAll('.intl-type-btn');
+                    const hiddenInput = document.getElementById('intlShippingType');
+                    const setActive = (type) => {
+                        btns.forEach(btn => {
+                            if (btn.dataset.intlType === type) {
+                                btn.classList.add('active', 'btn-primary');
+                                btn.classList.remove('btn-secondary');
+                            } else {
+                                btn.classList.remove('active', 'btn-primary');
+                                btn.classList.add('btn-secondary');
+                            }
+                        });
+                        hiddenInput.value = type;
+                        this.updateInternationalShipping();
+                    };
+                    btns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const type = btn.dataset.intlType;
+                            if (type === hiddenInput.value) return;
+                            setActive(type);
+                        });
+                    });
+                    setActive(hiddenInput.value || 'volumeWeight');
+                },
+                
                 renderAll() {
-                    // 从 CalculationEngine 获取最新状态，更新价格显示
                     const state = window.CalculationEngine.getState();
                     this.updateQuoteDisplayFromState(state);
                     
-                    this.updateOtherAccessoriesDerivedState(); // 重新计算并渲染其他配件
-                    this.updateAllProductPrices();             // 更新水冷机、配件、功率下拉的价格标签
-                    this.updateHistoryDisplay();               // 刷新历史记录列表
-                    this.updateSelectedTemplateDisplay();      // 新增：确保模板内容随报价变化刷新
+                    this.updateOtherAccessoriesDerivedState();
+                    this.updateAllProductPrices();
+                    this.updateHistoryDisplay();
+                    this.updateSelectedTemplateDisplay();
                 }
             };
             
@@ -5586,25 +5735,14 @@ Total price: {totalUSD}`,
                             }
                         });
                         
-                        // 国家和邮编
-                        const countryElement = document.getElementById('country');
-                        if (countryElement) {
-                            countryElement.addEventListener('change', (e) => {
+                        // 国际运费单价
+                        const intlUnitPriceElement = document.getElementById('intlUnitPrice');
+                        if (intlUnitPriceElement) {
+                            intlUnitPriceElement.addEventListener('input', () => {
                                 try {
-                                    DataModule.updateCurrentQuote({ country: e.target.value });
+                                    KHQuoteSystem.UIModule.updateInternationalShipping();
                                 } catch (error) {
-                                    console.error('更新国家失败:', error);
-                                }
-                            });
-                        }
-                        
-                        const zipCodeElement = document.getElementById('zipCode');
-                        if (zipCodeElement) {
-                            zipCodeElement.addEventListener('change', (e) => {
-                                try {
-                                    DataModule.updateCurrentQuote({ zipCode: e.target.value });
-                                } catch (error) {
-                                    console.error('更新邮编失败:', error);
+                                    console.error('更新国际运费单价失败:', error);
                                 }
                             });
                         }
@@ -6055,92 +6193,23 @@ Total price: {totalUSD}`,
                         if (resetToDefaultBtn) {
                             resetToDefaultBtn.addEventListener('click', () => {
                                 try {
-                                    if (confirm('确定要恢复默认产品数据吗？\n\n这将重置所有机器、水冷机和配件数据为系统内置版本。\n\n模板和汇率将恢复为默认值，历史报价记录将保留。')) {
+                                    if (confirm('确定要恢复默认产品数据吗？\n\n这将重置以下所有内容为系统内置版本：\n- 机器数据\n- 水冷机、配件、其他配件\n- 报价模板\n- 汇率\n\n历史报价记录将保留。')) {
                                         UIModule.showLoading();
                                         
-                                        // 仅保存历史记录和最后备份时间
-                                        const currentData = DataModule.getAllData();
-                                        const savedHistory = [...(currentData?.quoteHistory || [])];
-                                        const savedLastBackupTime = currentData?.lastBackupTime;
+                                        // 调用数据模块的完全重置方法（保留历史）
+                                        const success = DataModule.resetAllToDefault(true);
                                         
-                                        // 清除localStorage中的产品相关数据
-                                        localStorage.removeItem('khLaserQuoteData');
-                                        
-                                        // 重新加载默认数据（机器和产品）
-                                        DataModule.loadDefaultData();
-                                        
-                                        // 恢复历史记录
-                                        DataModule.data.quoteHistory = savedHistory;
-                                        DataModule.data.lastBackupTime = savedLastBackupTime;
-                                        
-                                        // 重置模板为默认模板（与初始化时一致）
-                                        DataModule.data.templates = [
-                                            {
-                                                id: 'template1',
-                                                name: 'A系列报价模板',
-                                                content: `Model {machineModel}
-packing size: {packingSize} cm
-weight: {actualWeight}
-with {waterCooler} industry chiller  {standardAccessories}
-
-1. Ruida 8445 control system
-2. Linear Guides 15mm
-3. Red light positioning
-4. 57 stepper motor
-5. Leadshine driver
-6. Air controling system
-7. Honeycomb platform
-8. Plywood box packaging
-9. Electric up and down lift
-==============================
-Total price: {totalUSD}`,
-                                                lastUsed: null
-                                            },
-                                            {
-                                                id: 'template2',
-                                                name: 'C系列报价模板',
-                                                content: `Model {machineModel}
-packing size: {packingSize} cm
-weight: {actualWeight}
-with {waterCooler} industry chiller  {standardAccessories}
-
-1. Ruida 8445 control system
-2. Linear Guides 15mm
-3. Red light positioning
-4. Leadshine motor and driver
-5. Air controling system
-6. Honeycomb platform
-7. Plywood box packaging
-8. Speed control wheel
-9. Electric up and down lift
-===================================
-Total price: {totalUSD}`,
-                                                lastUsed: null
-                                            },
-                                            {
-                                                id: 'template3',
-                                                name: '通用报价模板',
-                                                content: `Model {machineModel}
-packing size: {packingSize} cm
-weight: {actualWeight}
-======================
-Total price: {totalUSD}`,
-                                                lastUsed: null
-                                            }
-                                        ];
-                                        
-                                        // 重置汇率为默认值 6.5
-                                        DataModule.data.exchangeRate = 6.6;
-                                        
-                                        // 保存到localStorage
-                                        DataModule.saveToLocalStorage();
-                                        
-                                        // 重新初始化UI
-                                        setTimeout(() => {
-                                            UIModule.initUI();
+                                        if (success) {
+                                            // 重新初始化UI
+                                            setTimeout(() => {
+                                                UIModule.initUI();
+                                                UIModule.hideLoading();
+                                                NotificationModule.showSuccess('所有数据已恢复为默认值！', '机器、配件、模板、汇率已重置，历史记录已保留。');
+                                            }, 500);
+                                        } else {
                                             UIModule.hideLoading();
-                                            NotificationModule.showSuccess('默认数据已恢复！', '模板和汇率已重置，历史记录已保留。');
-                                        }, 500);
+                                            NotificationModule.showError('恢复默认数据失败，请刷新页面重试');
+                                        }
                                     }
                                 } catch (error) {
                                     console.error('恢复默认数据失败:', error);
@@ -6525,7 +6594,6 @@ Total price: {totalUSD}`,
                 // 计算国内运费
                 calculateDomesticShipping(cbm, province) {
                     try {
-                        // 青岛的特殊规则
                         if (province === "青岛") {
                             if (cbm <= 5) {
                                 return 500;
@@ -6534,16 +6602,13 @@ Total price: {totalUSD}`,
                             }
                         }
                         
-                        // 其他省份的规则
                         const provinceRule = DOMESTIC_SHIPPING_RULES[province] || DOMESTIC_SHIPPING_RULES['其他'];
                         const firstWeightPrice = provinceRule.firstWeightPrice;
                         
-                        // 找到对应的CBM区间单价
                         let unitPrice = 0;
                         let foundRange = false;
                         
                         for (const range of provinceRule.cbmRanges) {
-                            // 处理 Infinity 的情况
                             if (range.max === Infinity) {
                                 if (cbm >= range.min) {
                                     unitPrice = range.price;
@@ -6565,21 +6630,28 @@ Total price: {totalUSD}`,
                             }
                         }
                         
-                        // 兜底逻辑：如果没有找到匹配的区间，使用最后一个区间的价格
                         if (!foundRange && provinceRule.cbmRanges.length > 0) {
                             const lastRange = provinceRule.cbmRanges[provinceRule.cbmRanges.length - 1];
                             unitPrice = lastRange.price;
                         }
                         
-                        // 计算运费
                         const shippingFee = (firstWeightPrice + cbm * unitPrice) * 1.07;
-                        // 进一制，返回整数
                         return Math.ceil(shippingFee);
                     } catch (error) {
                         console.error('计算国内运费失败:', error);
-                        // 兜底逻辑：返回一个默认值
                         return Math.ceil(30 + cbm * 200 * 1.07);
                     }
+                },
+                
+                // 计算国际运费
+                calcInternationalShipping(machine, type, unitPrice) {
+                    if (!machine) return 0;
+                    let baseValue = 0;
+                    if (type === 'volumeWeight') baseValue = machine.volumeWeight || 0;
+                    else if (type === 'cbm') baseValue = machine.cbm || 0;
+                    else if (type === 'actualWeight') baseValue = machine.actualWeight || 0;
+                    const shipping = baseValue * unitPrice;
+                    return isNaN(shipping) ? 0 : Math.ceil(shipping);
                 },
                 
                 // 价格输入校验
@@ -6709,7 +6781,6 @@ Total price: {totalUSD}`,
 
 
 
-            // 从历史记录恢复报价数据（纯数据转换，不操作 DOM）
             _restoreFromHistory(historyQuote) {
                 return {
                     selectedSeries: historyQuote.selectedSeries || '',
@@ -6724,8 +6795,8 @@ Total price: {totalUSD}`,
                     domesticShipping: parseFloat(historyQuote.domesticShipping) || 0,
                     otherFees: parseFloat(historyQuote.otherFees) || 0,
                     quantity: parseInt(historyQuote.quantity) || 1,
-                    country: historyQuote.country || 'US',
-                    zipCode: historyQuote.zipCode || '',
+                    intlShippingType: historyQuote.intlShippingType || 'volumeWeight',
+                    intlUnitPrice: parseFloat(historyQuote.intlUnitPrice) || 0,
                     selectedProvince: historyQuote.selectedProvince || '',
                     priceSource: historyQuote.priceSource || 'tier1',
                     selectedTemplateId: historyQuote.selectedTemplateId || null
@@ -6744,31 +6815,21 @@ Total price: {totalUSD}`,
                     return false;
                 }
 
-                // 1. 重置表单（纯 DOM 重置）
-                KHQuoteSystem.UIModule._resetFormDOM(); // 仍使用 UIModule 的 reset，或改用 FormModule.clearFormSelections
-
-                // 2. 填充表单（不修改 DataModule）
+                KHQuoteSystem.UIModule._resetFormDOM();
                 KHQuoteSystem.FormModule.populateForm(quote);
 
-                // 3. 将历史数据转换为当前报价数据
                 const restoredData = this._restoreFromHistory(quote);
-
-                // 4. 应用到 DataModule（由 Controller 统一修改数据）
                 KHQuoteSystem.DataModule.updateCurrentQuote(restoredData);
 
-                // 5. 重新计算并刷新 UI
                 KHQuoteSystem.CalculationEngine.recalculateAll();
+                KHQuoteSystem.UIModule.updateInternationalShipping();
                 KHQuoteSystem.UIModule.renderAll();
 
-                // 7. 设置模板（如果历史记录中有）
                 if (quote.selectedTemplateId) {
                     KHQuoteSystem.DataModule.selectTemplate(quote.selectedTemplateId);
-                    // KHQuoteSystem.UIModule.updateSelectedTemplateDisplay(); // 删除，renderAll 内部已调用
                 }
 
-                // 8. 更新历史记录选中状态
                 KHQuoteSystem.UIModule.selectedHistoryItemId = quoteId;
-                // KHQuoteSystem.UIModule.updateHistoryDisplay(); // 删除，renderAll 内部已调用
 
                 KHQuoteSystem.NotificationModule.showSuccess('历史报价已加载到表单');
                 return true;
@@ -6790,9 +6851,8 @@ Total price: {totalUSD}`,
                     internationalShipping: 0,
                     domesticShipping: 0,
                     otherFees: 0,
+                    otherFees2: 0,
                     quantity: 1,
-                    country: 'US',
-                    zipCode: '',
                     selectedProvince: '',
                     priceSource: 'tier1',
                     totalCNY: 0,

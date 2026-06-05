@@ -1398,8 +1398,12 @@
             padding: 18px;
             margin-bottom: 18px;
         }
-        
 
+        /* 国际运费类型按钮样式优化 */
+        .intl-type-btn {
+            white-space: nowrap;
+            height: 38px;
+        }
 
     </style>
 </head>
@@ -1468,10 +1472,17 @@
                             <div class="rate-card">
                                 <h2 class="card-title">
                                     <i class="fas fa-exchange-alt"></i>
-                                    汇率设置 (1 USD = ? CNY)
+                                    汇率与手续费
                                 </h2>
-                                <div class="form-group">
-                                    <input type="number" id="exchangeRate" step="0.01" min="0" value="6.66">
+                                <div style="display: flex; gap: 15px;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label for="exchangeRate">汇率 (1 USD = ? CNY)</label>
+                                        <input type="number" id="exchangeRate" step="0.01" min="0" value="6.66">
+                                    </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label for="serviceFeeRate">手续费 (%)</label>
+                                        <input type="number" id="serviceFeeRate" step="0.1" min="0" max="100" value="3">
+                                    </div>
                                 </div>
                             </div>
                             
@@ -1912,6 +1923,7 @@
                         <li>机器和配件数据（恢复为内置版本）</li>
                         <li>报价模板（恢复为A系列、C系列、通用模板）</li>
                         <li>汇率（恢复为6.6）</li>
+                        <li>手续费（恢复为3%）</li>
                     </ul>
                     <p style="margin-top: 8px;"><strong>历史报价记录将保留。</strong></p>
                 </div>
@@ -2866,6 +2878,7 @@ Total price: {totalUSD}`,
         ];
 
         const DEFAULT_EXCHANGE_RATE = 6.6;
+        const DEFAULT_SERVICE_FEE_RATE = 0.03;   // 3%
 
         // ==================== 内置数据区域结束 ====================
 
@@ -2875,6 +2888,7 @@ Total price: {totalUSD}`,
             const DataModule = {
                 data: {
                     exchangeRate: 6.6,
+                    serviceFeeRate: DEFAULT_SERVICE_FEE_RATE,
                     machines: [],
                     products: {
                         waterCoolers: [],
@@ -2961,6 +2975,7 @@ Total price: {totalUSD}`,
                 
                 // 数据获取方法
                 getExchangeRate() { return this.data.exchangeRate; },
+                getServiceFeeRate() { return this.data.serviceFeeRate; },
                 getMachines() { return this.data.machines; },
                 getProducts() { return this.data.products; },
                 getQuoteHistory() { return this.data.quoteHistory; },
@@ -3319,6 +3334,20 @@ Total price: {totalUSD}`,
                     }
                 },
                 
+                updateServiceFeeRate(newPercent) {
+                    try {
+                        if (newPercent < 0 || newPercent > 100) {
+                            throw new Error('手续费必须在0-100之间');
+                        }
+                        this.data.serviceFeeRate = newPercent / 100;
+                        this.saveToLocalStorage();
+                        return true;
+                    } catch (error) {
+                        console.error('更新手续费失败:', error);
+                        throw error;
+                    }
+                },
+                
                 updateCurrentQuote(updates) {
                     try {
                         this.data.currentQuote = { ...this.data.currentQuote, ...updates, timestamp: new Date().toISOString() };
@@ -3334,6 +3363,7 @@ Total price: {totalUSD}`,
                     try {
                         const dataToSave = {
                             exchangeRate: this.data.exchangeRate,
+                            serviceFeeRate: this.data.serviceFeeRate,
                             machines: this.data.machines,
                             products: this.data.products,
                             quoteHistory: this.data.quoteHistory,
@@ -3361,6 +3391,7 @@ Total price: {totalUSD}`,
                             this.data.templates = parsedData.templates || this.data.templates;
                             this.data.lastBackupTime = parsedData.lastBackupTime || null;
                             this.data.maxHistoryItems = parsedData.maxHistoryItems || 10;
+                            this.data.serviceFeeRate = parsedData.serviceFeeRate !== undefined ? parsedData.serviceFeeRate : DEFAULT_SERVICE_FEE_RATE;
                             
                             this.data.quoteHistory = (parsedData.quoteHistory || []).map(item => {
                                 return {
@@ -3432,6 +3463,7 @@ Total price: {totalUSD}`,
                         this.data.templates = JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
                         
                         this.data.exchangeRate = DEFAULT_EXCHANGE_RATE;
+                        this.data.serviceFeeRate = DEFAULT_SERVICE_FEE_RATE;
                         
                         if (keepHistory) {
                             this.data.quoteHistory = savedHistory;
@@ -4108,6 +4140,7 @@ Total price: {totalUSD}`,
                       // 初始化全新currentQuote
                       this.initNewCurrentQuote();
                       this.initExchangeRate();
+                      this.initServiceFeeRate();
                       this.initMachineSelection();
                       this.initProductOptions();
                       CalculationEngine.recalculateAll();
@@ -4162,6 +4195,13 @@ Total price: {totalUSD}`,
                         this.getElement('exchangeRate').value = exchangeRate;
                     } catch (error) {
                         console.error('初始化汇率失败:', error);
+                    }
+                },
+                
+                initServiceFeeRate() {
+                    const input = document.getElementById('serviceFeeRate');
+                    if (input) {
+                        input.value = DataModule.getServiceFeeRate() * 100;
                     }
                 },
                 
@@ -5701,6 +5741,25 @@ Total price: {totalUSD}`,
                             }
                         });
                         
+                        // 手续费变更
+                        const serviceFeeInput = document.getElementById('serviceFeeRate');
+                        if (serviceFeeInput) {
+                            serviceFeeInput.addEventListener('change', (e) => {
+                                try {
+                                    const percent = parseFloat(e.target.value);
+                                    if (isNaN(percent)) return;
+                                    DataModule.updateServiceFeeRate(percent);
+                                    CalculationEngine.recalculateAll();
+                                    KHQuoteSystem.UIModule.renderAll();
+                                    NotificationModule.showSuccess('手续费已更新');
+                                } catch (error) {
+                                    NotificationModule.showError(error.message);
+                                    // 恢复输入框显示原值
+                                    e.target.value = DataModule.getServiceFeeRate() * 100;
+                                }
+                            });
+                        }
+                        
                         // 价格源选择
                         document.querySelectorAll('.price-source-option').forEach(option => {
                             option.addEventListener('click', (e) => {
@@ -6350,18 +6409,12 @@ Total price: {totalUSD}`,
                 calculateFinalTotal() {
                     const subtotal = this.calculateSubtotal();
                     const totalCNY = subtotal * this.quantity;
-                    
-                    // 获取汇率
                     const exchangeRate = KHQuoteSystem.DataModule.getExchangeRate();
-                    // 美元采用进一制
-                    const totalUSD = Math.ceil(totalCNY / exchangeRate);
-                    
-                    return {
-                        cny: totalCNY,
-                        usd: totalUSD,
-                        rawCNY: totalCNY,
-                        rawUSD: totalUSD
-                    };
+                    const feeRate = KHQuoteSystem.DataModule.getServiceFeeRate();   // 获取手续费率（小数）
+                    // 防止分母为0或负数
+                    const divisor = (1 - feeRate) <= 0 ? 0.01 : (1 - feeRate);
+                    const totalUSD = Math.ceil(totalCNY / divisor / exchangeRate);
+                    return { cny: totalCNY, usd: totalUSD, rawCNY: totalCNY, rawUSD: totalUSD };
                 },
                 
                 // 获取完整状态
@@ -6736,7 +6789,9 @@ Total price: {totalUSD}`,
                         totalCNY += internationalShipping + domesticShipping + otherFees + otherFees2;
                         totalCNY *= (parseInt(quoteData.quantity) || 1);
 
-                        const totalUSD = Math.ceil(totalCNY / exchangeRate);
+                        const feeRate = KHQuoteSystem.DataModule.getServiceFeeRate();
+                        const divisor = (1 - feeRate) <= 0 ? 0.01 : (1 - feeRate);
+                        const totalUSD = Math.ceil(totalCNY / divisor / exchangeRate);
 
                         return {
                             totalCNY: this.formatPrice(totalCNY),

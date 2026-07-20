@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -58,7 +58,7 @@
             max-width: 100%;
             width: 100%;
             margin: 0 auto;
-            padding: 20px;
+            padding: 6px 20px 5px 20px;
             flex: 1;
             min-width: 1200px;
         }
@@ -101,9 +101,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
+            padding: 0.3rem 0 0.5rem 0;
             border-bottom: 2px solid var(--gray-200);
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.8rem;
         }
         
         .logo {
@@ -450,6 +450,33 @@
             background-color: var(--danger-dark);
         }
         
+        /* 激光管按钮组样式 */
+        .laser-tube-btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .laser-tube-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .laser-tube-btn:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+        .laser-tube-btn.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
         .btn-link {
             background: transparent;
             color: var(--primary-color);
@@ -574,8 +601,8 @@
         
         footer {
             text-align: center;
-            padding: 15px 0;
-            margin-top: 20px;
+            padding: 6px 0;
+            margin-top: 4px;
             border-top: 1px solid var(--gray-200);
             color: var(--gray-700);
             font-size: 0.85rem;
@@ -588,6 +615,10 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-top: 10px;
+        }
+        
+        .machine-info-grid.machine-info-row {
+            grid-template-columns: repeat(6, 1fr);
         }
         
         .machine-info-item {
@@ -622,22 +653,46 @@
             .machine-info-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .machine-info-grid.machine-info-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
         
         .series-selection-row {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
             margin-bottom: 12px;
+            align-items: end;
         }
         
-        @media (max-width: 768px) {
+        .series-selection-row select {
+            width: 100%;
+            min-width: 0;
+        }
+        
+        /* 当屏幕宽度小于 800px 时，四个下拉框改为两行两列 */
+        @media (max-width: 800px) {
+            .series-selection-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* 当屏幕宽度小于 500px 时，改为单列 */
+        @media (max-width: 500px) {
             .series-selection-row {
                 grid-template-columns: 1fr;
             }
-            
+        }
+        
+        @media (max-width: 768px) {
             .machine-info-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .machine-info-grid.machine-info-row {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
         
@@ -1501,12 +1556,11 @@
                         
                         <h2 class="card-title">
                             <i class="fas fa-cogs"></i>
-                            产品配置
+                            机器配置
                         </h2>
                         
                         <!-- 机器选择 -->
                         <div class="form-group">
-                            <label>机器选择</label>
                             <div class="series-selection-row">
                                 <div>
                                     <label>系列</label>
@@ -1526,6 +1580,18 @@
                                         <option value="">请先选择型号</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label>水冷机</label>
+                                    <select id="waterCoolerSelect">
+                                        <option value="">请选择水冷机</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 激光管选项 -->
+                            <div id="laserTubeContainer" style="margin-top: 10px; display: none;">
+                                <label>激光管选项</label>
+                                <div id="laserTubeOptions" class="radio-group" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
                             </div>
                             
                             <!-- 机器信息显示 -->
@@ -1533,7 +1599,7 @@
                                 <div class="machine-info-title">
                                     <i class="fas fa-info-circle"></i> 机器信息
                                 </div>
-                                <div class="machine-info-grid">
+                                <div class="machine-info-grid machine-info-row">
                                     <div class="machine-info-item">
                                         <div class="machine-info-label">打包尺寸 (cm)</div>
                                         <div class="machine-info-value" id="packingSize">-</div>
@@ -1550,26 +1616,23 @@
                                         <div class="machine-info-label">实重 (kg)</div>
                                         <div class="machine-info-value" id="actualWeight">-</div>
                                     </div>
+                                    <div class="machine-info-item">
+                                        <div class="machine-info-label">气泵</div>
+                                        <div class="machine-info-value" id="airPumpValue">-</div>
+                                    </div>
+                                    <div class="machine-info-item">
+                                        <div class="machine-info-label">风机</div>
+                                        <div class="machine-info-value" id="fanValue">-</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- 产品选择（水冷机和配件并排） -->
-                        <div class="product-selection-grid">
-                            <!-- 水冷机选择 -->
-                            <div class="form-group">
-                                <label>水冷机选择</label>
-                                <div class="radio-group" id="waterCoolerOptions">
-                                    <!-- 选项将通过JS动态生成 -->
-                                </div>
-                            </div>
-                            
-                            <!-- 配件选择 -->
-                            <div class="form-group">
-                                <label>配件选择</label>
-                                <div class="checkbox-group" id="accessoryOptions">
-                                    <!-- 选项将通过JS动态生成 -->
-                                </div>
+                        <!-- 配件选择 -->
+                        <div class="form-group">
+                            <label>配件选择</label>
+                            <div class="checkbox-group" id="accessoryOptions">
+                                <!-- 选项将通过JS动态生成 -->
                             </div>
                         </div>
                         
@@ -1649,7 +1712,6 @@
                                     <option value="四川">四川</option>
                                     <option value="贵州">贵州</option>
                                     <option value="云南">云南</option>
-                                    <option value="西藏">西藏</option>
                                     <option value="陕西">陕西</option>
                                     <option value="甘肃">甘肃</option>
                                     <option value="青海">青海</option>
@@ -1676,7 +1738,7 @@
                             </div>
                             <div style="flex: 1;">
                                 <label for="internationalShippingDisplay" style="margin-bottom: 6px; font-weight: 500; font-size: 0.92rem; display: block;">国际运费 (CNY)</label>
-                                <input type="text" id="internationalShipping" readonly style="background:#f5f5f5; cursor:default; width: 100%;">
+                                <input type="number" id="internationalShipping" step="0.01" min="0" style="width:100%;">
                             </div>
                         </div>
 
@@ -1723,14 +1785,18 @@
                             
                             <div class="price-details-group">
                                 <div class="price-details-grid">
-                                    <div class="price-row">
-                                        <span class="price-detail-label">机器价格:</span>
-                                        <span class="price-detail-value" id="priceDetailMachine">¥0</span>
-                                    </div>
-                                    <div class="price-row">
-                                        <span class="price-detail-label">水冷机:</span>
-                                        <span class="price-detail-value" id="priceDetailWaterCooler">¥0</span>
-                                    </div>
+                                <div class="price-row">
+                                    <span class="price-detail-label">机器价格:</span>
+                                    <span class="price-detail-value" id="priceDetailMachine">¥0</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-detail-label">激光管加价:</span>
+                                    <span class="price-detail-value" id="priceDetailLaserTube">¥0</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="price-detail-label">水冷机:</span>
+                                    <span class="price-detail-value" id="priceDetailWaterCooler">¥0</span>
+                                </div>
                                     <div class="price-row">
                                         <span class="price-detail-label">配件价格:</span>
                                         <span class="price-detail-value" id="priceDetailAccessories">¥0</span>
@@ -1776,7 +1842,7 @@
                         <div class="quick-actions">
                             <button class="btn btn-primary" id="selectTemplateBtn">
                                 <i class="fas fa-file-alt"></i>
-                                选择模板
+                                一键下单
                             </button>
                             <button class="btn btn-success" id="copyQuote">
                                 <i class="fas fa-copy"></i>
@@ -1808,76 +1874,12 @@
                     
                     <div class="tab-container">
                         <div class="tabs">
-                            <div class="tab active" data-tab="product">产品数据管理</div>
-                            <div class="tab" data-tab="template">模板管理</div>
+                            <div class="tab active" data-tab="template">模板管理</div>
                             <div class="tab" data-tab="backup">数据安全管理</div>
                         </div>
                         
-                        <!-- 产品数据管理 -->
-                        <div class="tab-content active" id="productTab">
-                            <div class="settings-section">
-                                <div class="settings-section-title">产品数据编辑</div>
-                                <button class="btn btn-primary" id="editProductData" style="width: 100%; margin-bottom: 10px;">
-                                    <i class="fas fa-edit"></i> 编辑产品和配件数据
-                                </button>
-                                
-                                <div id="productDataEditor" style="display: none; margin-top: 18px;">
-                                    <div class="product-data-editor-form">
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label>产品类型</label>
-                                                <select id="productType">
-                                                    <option value="waterCooler">水冷机</option>
-                                                    <option value="accessory">配件</option>
-                                                    <option value="otherAccessory">其他配件</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label>产品名称</label>
-                                <input type="text" id="productName" placeholder="请输入产品名称">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>产品型号</label>
-                                <input type="text" id="productModel" placeholder="请输入产品型号">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>阶梯一价格 (CNY)</label>
-                                <input type="number" id="productPrice" step="0.01" min="0" placeholder="请输入价格">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>阶梯二价格 (CNY)</label>
-                                <input type="number" id="productPriceTier2" step="0.01" min="0" placeholder="请输入阶梯二价格">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>阶梯三价格 (CNY)</label>
-                                <input type="number" id="productPriceTier3" step="0.01" min="0" placeholder="请输入阶梯三价格">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="btn btn-success" id="saveProductData">保存</button>
-                            <button class="btn btn-danger" id="deleteProductData">删除</button>
-                            <button class="btn btn-secondary" id="clearProductForm">清空</button>
-                        </div>
-                    </div>
-                    
-                    <div id="productDataTable" class="product-list-table"></div>
-                </div>
-            </div>
-            <!-- 已删除 Excel/CSV 导入导出部分 -->
-        </div>
-        
-        <!-- 模板管理 -->
-        <div class="tab-content" id="templateTab">
+                        <!-- 模板管理 -->
+                        <div class="tab-content active" id="templateTab">
             <div class="settings-section">
                 <div class="settings-section-title">报价单模板管理</div>
                 <button class="btn btn-primary" id="manageTemplates" style="width: 100%; margin-bottom: 10px;">
@@ -1985,33 +1987,10 @@
 </div>
 </div>
 
-            <!-- 模板选择模态框 -->
-            <div class="modal" id="templateSelectModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="modal-title">
-                            <i class="fas fa-file-alt"></i>
-                            选择报价模板
-                        </h2>
-                        <button class="close-modal" id="closeTemplateSelect">&times;</button>
-                    </div>
-                    
-                    <div class="tab-container">
-                        <div id="templateSelectList" class="product-list-table">
-                            <!-- 模板列表将动态加载 -->
-                        </div>
-                        
-                        <div class="alert alert-info" style="margin-top: 15px;">
-                            <i class="fas fa-info-circle"></i>
-                            选择模板后，系统会自动填充当前报价信息到模板中，然后可以点击"复制报价"按钮复制完整的报价单。
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <footer>
-            <p>© 2026 KH Laser 报价系统 | 版本 2.8.5</p>
+            <p>© 2026 KH Laser 报价系统 | 版本 2.9.0</p>
         </footer>
     </div>
 
@@ -2024,29 +2003,6 @@
         
         // ==================== 工具函数模块开始 ====================
         const Utils = {
-            // 解析数字
-            parseNumber(value) {
-                try {
-                    if (!value || value === '') return 0;
-                    const cleaned = value.toString().replace(/[^0-9.-]+/g, '');
-                    const num = parseFloat(cleaned);
-                    return isNaN(num) ? 0 : num;
-                } catch (error) {
-                    console.error('解析数字失败:', error);
-                    return 0;
-                }
-            },
-            
-            // 清理字段
-            cleanField(field) {
-                try {
-                    return field.trim().replace(/^"|\"$/g, '').trim();
-                } catch (error) {
-                    console.error('清理字段失败:', error);
-                    return field || '';
-                }
-            },
-            
             // 从功率字符串中提取数字
             extractNumberFromPowerString(str) {
                 try {
@@ -2381,154 +2337,180 @@
             }
         };
 
+        const LASER_TUBE_OPTIONS = {
+            "80W": [
+                { id: "yongli_r3", name: "Yongli R3", upcharge: 0 },
+                { id: "yongli_h2", name: "Yongli H2", upcharge: 140 },
+                { id: "reci_t2", name: "Reci T2", upcharge: 190 },
+                { id: "reci_w2", name: "Reci W2", upcharge: 850 }
+            ],
+            "100W": [
+                { id: "yongli_r5", name: "Yongli R5", upcharge: 0 },
+                { id: "yongli_h4", name: "Yongli H4", upcharge: 120 },
+                { id: "reci_t4", name: "Reci T4", upcharge: 230 },
+                { id: "reci_w4", name: "Reci W4", upcharge: 1210 }
+            ],
+            "130W": [
+                { id: "yongli_r7", name: "Yongli R7", upcharge: 0 },
+                { id: "yongli_h6", name: "Yongli H6", upcharge: 600 },
+                { id: "reci_t6", name: "Reci T6", upcharge: 330 },
+                { id: "reci_w6", name: "Reci W6", upcharge: 2270 }
+            ],
+            "150W": [
+                { id: "yongli_r9", name: "Yongli R9", upcharge: 0 },
+                { id: "yongli_h8", name: "Yongli H8", upcharge: 970 },
+                { id: "reci_w8", name: "Reci W8", upcharge: 4540 }
+            ]
+        };
+
         const DEFAULT_DATA = {
             machines: [
-                { id: 'kh1', series: 'A', model: '5030A', power: '50W', price: 5025, priceTier2: 5377, priceTier3: 6030, packingSize: '110*80*85', cbm: 0.8, volumeWeight: 125, actualWeight: 103 },
-                { id: 'kh2', series: 'A', model: '5030A', power: '60W', price: 5327, priceTier2: 5700, priceTier3: 6392, packingSize: '128*80*85', cbm: 0.9, volumeWeight: 146, actualWeight: 118 },
-                { id: 'kh3', series: 'A', model: '5030A', power: '80W', price: 5628, priceTier2: 6022, priceTier3: 6754, packingSize: '155*80*85', cbm: 1.1, volumeWeight: 176, actualWeight: 125 },
-                { id: 'kh4', series: 'A', model: '6040A', power: '50W', price: 5226, priceTier2: 5592, priceTier3: 6271, packingSize: '120*90*85', cbm: 1, volumeWeight: 153, actualWeight: 123 },
-                { id: 'kh5', series: 'A', model: '6040A', power: '60W', price: 5528, priceTier2: 5915, priceTier3: 6634, packingSize: '128*90*85', cbm: 1, volumeWeight: 164, actualWeight: 127 },
-                { id: 'kh6', series: 'A', model: '6040A', power: '80W', price: 5829, priceTier2: 6237, priceTier3: 6995, packingSize: '155*90*85', cbm: 1.2, volumeWeight: 198, actualWeight: 130 },
-        { id: 'kh7', series: 'A', model: '6040A', power: '100W', price: 6432, priceTier2: 6882, priceTier3: 7718, packingSize: '174*90*85', cbm: 1.4, volumeWeight: 222, actualWeight: 140 },
-        { id: 'kh8', series: 'A', model: '7050A', power: '60W', price: 5729, priceTier2: 6130, priceTier3: 6875, packingSize: '128*97*87', cbm: 1.1, volumeWeight: 181, actualWeight: 150 },
-        { id: 'kh9', series: 'A', model: '7050A', power: '80W', price: 6030, priceTier2: 6452, priceTier3: 7236, packingSize: '155*97*87', cbm: 1.4, volumeWeight: 219, actualWeight: 160 },
-        { id: 'kh10', series: 'A', model: '7050A', power: '100W', price: 6633, priceTier2: 7097, priceTier3: 7960, packingSize: '174*97*87', cbm: 1.5, volumeWeight: 245, actualWeight: 172 },
-        { id: 'kh11', series: 'A', model: '9060A', power: '80W', price: 6935, priceTier2: 7420, priceTier3: 8322, packingSize: '150*114*87', cbm: 1.5, volumeWeight: 248, actualWeight: 215 },
-        { id: 'kh12', series: 'A', model: '9060A', power: '100W', price: 7337, priceTier2: 7850, priceTier3: 8804, packingSize: '174*114*87', cbm: 1.8, volumeWeight: 288, actualWeight: 230 },
-        { id: 'kh13', series: 'A', model: '9060A', power: '130W', price: 7739, priceTier2: 8280, priceTier3: 9286, packingSize: '198*114*87', cbm: 2, volumeWeight: 328, actualWeight: 245 },
-        { id: 'kh14', series: 'A', model: '9060A', power: '150W', price: 8543, priceTier2: 9140, priceTier3: 10251, packingSize: '217*114*87', cbm: 2.2, volumeWeight: 359, actualWeight: 260 },
-        { id: 'kh15', series: 'A', model: '1060A', power: '80W', price: 7235, priceTier2: 7741, priceTier3: 8682, packingSize: '158*114*87', cbm: 1.6, volumeWeight: 262, actualWeight: 225 },
-        { id: 'kh16', series: 'A', model: '1060A', power: '100W', price: 7637, priceTier2: 8172, priceTier3: 9164, packingSize: '174*114*87', cbm: 1.8, volumeWeight: 288, actualWeight: 230 },
-        { id: 'kh17', series: 'A', model: '1060A', power: '130W', price: 8040, priceTier2: 8603, priceTier3: 9648, packingSize: '198*114*87', cbm: 2, volumeWeight: 328, actualWeight: 240 },
-        { id: 'kh18', series: 'A', model: '1060A', power: '150W', price: 8843, priceTier2: 9462, priceTier3: 10612, packingSize: '217*114*87', cbm: 2.2, volumeWeight: 359, actualWeight: 255 },
-        { id: 'kh19', series: 'A', model: '1080A', power: '80W', price: 7538, priceTier2: 8066, priceTier3: 9046, packingSize: '158*132*87', cbm: 1.9, volumeWeight: 303, actualWeight: 245 },
-        { id: 'kh20', series: 'A', model: '1080A', power: '100W', price: 7940, priceTier2: 8495, priceTier3: 9528, packingSize: '174*132*87', cbm: 2, volumeWeight: 334, actualWeight: 256 },
-        { id: 'kh21', series: 'A', model: '1080A', power: '130W', price: 8342, priceTier2: 8925, priceTier3: 10010, packingSize: '198*132*87', cbm: 2.3, volumeWeight: 379, actualWeight: 276 },
-        { id: 'kh22', series: 'A', model: '1080A', power: '150W', price: 9146, priceTier2: 9786, priceTier3: 10975, packingSize: '215*132*87', cbm: 2.5, volumeWeight: 412, actualWeight: 289 },
-        { id: 'kh23', series: 'A', model: '1490A', power: '80W', price: 8342, priceTier2: 8925, priceTier3: 10010, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 350 },
-        { id: 'kh24', series: 'A', model: '1490A', power: '100W', price: 8744, priceTier2: 9356, priceTier3: 10492, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 360 },
-        { id: 'kh25', series: 'A', model: '1490A', power: '130W', price: 9045, priceTier2: 9678, priceTier3: 10854, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 365 },
-        { id: 'kh26', series: 'A', model: '1490A', power: '150W', price: 9648, priceTier2: 10323, priceTier3: 11578, packingSize: '217*145*88', cbm: 2.8, volumeWeight: 462, actualWeight: 367 },
-        { id: 'kh27', series: 'A', model: '1410A', power: '80W', price: 8850, priceTier2: 9500, priceTier3: 10620, packingSize: '198*155*87', cbm: 2.7, volumeWeight: 446, actualWeight: 350 },
-        { id: 'kh28', series: 'A', model: '1410A', power: '100W', price: 9300, priceTier2: 9900, priceTier3: 11160, packingSize: '198*155*87', cbm: 2.7, volumeWeight: 446, actualWeight: 370 },
-        { id: 'kh29', series: 'A', model: '1410A', power: '130W', price: 9600, priceTier2: 10300, priceTier3: 11520, packingSize: '198*155*87', cbm: 2.7, volumeWeight: 446, actualWeight: 390 },
-        { id: 'kh30', series: 'A', model: '1410A', power: '150W', price: 10200, priceTier2: 10950, priceTier3: 12240, packingSize: '219*155*87', cbm: 3, volumeWeight: 493, actualWeight: 370 },
-        { id: 'kh31', series: 'B1', model: '5030B1', power: '50W', price: 5226, priceTier2: 5592, priceTier3: 6271, packingSize: '110*80*87', cbm: 0.8, volumeWeight: 128, actualWeight: 103 },
-        { id: 'kh32', series: 'B1', model: '5030B1', power: '60W', price: 5528, priceTier2: 5914, priceTier3: 6633, packingSize: '128*80*87', cbm: 0.9, volumeWeight: 149, actualWeight: 118 },
+                { id: 'kh1', series: 'A', model: '5030A', power: '50W', price: 5025, priceTier2: 5377, priceTier3: 6030, packingSize: '110*80*85', cbm: 0.8, volumeWeight: 125, actualWeight: 103, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh2', series: 'A', model: '5030A', power: '60W', price: 5327, priceTier2: 5700, priceTier3: 6392, packingSize: '128*80*85', cbm: 0.9, volumeWeight: 146, actualWeight: 118, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh3', series: 'A', model: '5030A', power: '80W', price: 5628, priceTier2: 6022, priceTier3: 6754, packingSize: '155*80*85', cbm: 1.1, volumeWeight: 176, actualWeight: 125, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh4', series: 'A', model: '6040A', power: '50W', price: 5226, priceTier2: 5592, priceTier3: 6271, packingSize: '120*90*85', cbm: 1, volumeWeight: 153, actualWeight: 123, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh5', series: 'A', model: '6040A', power: '60W', price: 5528, priceTier2: 5915, priceTier3: 6634, packingSize: '128*90*85', cbm: 1, volumeWeight: 164, actualWeight: 127, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh6', series: 'A', model: '6040A', power: '80W', price: 5829, priceTier2: 6237, priceTier3: 6995, packingSize: '155*90*85', cbm: 1.2, volumeWeight: 198, actualWeight: 130, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh7', series: 'A', model: '6040A', power: '100W', price: 6432, priceTier2: 6882, priceTier3: 7718, packingSize: '174*90*85', cbm: 1.4, volumeWeight: 222, actualWeight: 140, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh8', series: 'A', model: '7050A', power: '60W', price: 5729, priceTier2: 6130, priceTier3: 6875, packingSize: '128*97*87', cbm: 1.1, volumeWeight: 181, actualWeight: 150, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh9', series: 'A', model: '7050A', power: '80W', price: 6030, priceTier2: 6452, priceTier3: 7236, packingSize: '155*97*87', cbm: 1.4, volumeWeight: 219, actualWeight: 160, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh10', series: 'A', model: '7050A', power: '100W', price: 6633, priceTier2: 7097, priceTier3: 7960, packingSize: '174*97*87', cbm: 1.5, volumeWeight: 245, actualWeight: 172, airPump: 'Built-in', fan: 'Built-in' },
+                { id: 'kh11', series: 'A', model: '9060A', power: '80W', price: 6935, priceTier2: 7420, priceTier3: 8322, packingSize: '150*114*87', cbm: 1.5, volumeWeight: 248, actualWeight: 215, airPump: '006', fan: '250W' },
+                { id: 'kh12', series: 'A', model: '9060A', power: '100W', price: 7337, priceTier2: 7850, priceTier3: 8804, packingSize: '174*114*87', cbm: 1.8, volumeWeight: 288, actualWeight: 230, airPump: '006', fan: '250W' },
+                { id: 'kh13', series: 'A', model: '9060A', power: '130W', price: 7739, priceTier2: 8280, priceTier3: 9286, packingSize: '198*114*87', cbm: 2, volumeWeight: 328, actualWeight: 245, airPump: '006', fan: '250W' },
+                { id: 'kh14', series: 'A', model: '9060A', power: '150W', price: 8543, priceTier2: 9140, priceTier3: 10251, packingSize: '217*114*87', cbm: 2.2, volumeWeight: 359, actualWeight: 260, airPump: '006', fan: '250W' },
+                { id: 'kh15', series: 'A', model: '1060A', power: '80W', price: 7235, priceTier2: 7741, priceTier3: 8682, packingSize: '158*114*87', cbm: 1.6, volumeWeight: 262, actualWeight: 225, airPump: '006', fan: '250W' },
+                { id: 'kh16', series: 'A', model: '1060A', power: '100W', price: 7637, priceTier2: 8172, priceTier3: 9164, packingSize: '174*114*87', cbm: 1.8, volumeWeight: 288, actualWeight: 230, airPump: '006', fan: '250W' },
+                { id: 'kh17', series: 'A', model: '1060A', power: '130W', price: 8040, priceTier2: 8603, priceTier3: 9648, packingSize: '198*114*87', cbm: 2, volumeWeight: 328, actualWeight: 240, airPump: '006', fan: '250W' },
+                { id: 'kh18', series: 'A', model: '1060A', power: '150W', price: 8843, priceTier2: 9462, priceTier3: 10612, packingSize: '217*114*87', cbm: 2.2, volumeWeight: 359, actualWeight: 255, airPump: '006', fan: '250W' },
+                { id: 'kh19', series: 'A', model: '1080A', power: '80W', price: 7538, priceTier2: 8066, priceTier3: 9046, packingSize: '158*132*87', cbm: 1.9, volumeWeight: 303, actualWeight: 245, airPump: '006', fan: '250W' },
+                { id: 'kh20', series: 'A', model: '1080A', power: '100W', price: 7940, priceTier2: 8495, priceTier3: 9528, packingSize: '174*132*87', cbm: 2, volumeWeight: 334, actualWeight: 256, airPump: '006', fan: '250W' },
+                { id: 'kh21', series: 'A', model: '1080A', power: '130W', price: 8342, priceTier2: 8925, priceTier3: 10010, packingSize: '198*132*87', cbm: 2.3, volumeWeight: 379, actualWeight: 276, airPump: '006', fan: '250W' },
+                { id: 'kh22', series: 'A', model: '1080A', power: '150W', price: 9146, priceTier2: 9786, priceTier3: 10975, packingSize: '215*132*87', cbm: 2.5, volumeWeight: 412, actualWeight: 289, airPump: '006', fan: '250W' },
+        { id: 'kh23', series: 'A', model: '1490A', power: '80W', price: 8342, priceTier2: 8925, priceTier3: 10010, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 350, airPump: '009', fan: '550W' },
+        { id: 'kh24', series: 'A', model: '1490A', power: '100W', price: 8744, priceTier2: 9356, priceTier3: 10492, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 360, airPump: '009', fan: '550W' },
+        { id: 'kh25', series: 'A', model: '1490A', power: '130W', price: 9045, priceTier2: 9678, priceTier3: 10854, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 365, airPump: '009', fan: '550W' },
+        { id: 'kh26', series: 'A', model: '1490A', power: '150W', price: 9648, priceTier2: 10323, priceTier3: 11578, packingSize: '217*145*88', cbm: 2.8, volumeWeight: 462, actualWeight: 367, airPump: '009', fan: '550W' },
+        { id: 'kh27', series: 'A', model: '1410A', power: '80W', price: 8850, priceTier2: 9500, priceTier3: 10620, packingSize: '198*155*87', cbm: 2.7, volumeWeight: 446, actualWeight: 350, airPump: '009', fan: '550W' },
+        { id: 'kh28', series: 'A', model: '1410A', power: '100W', price: 9300, priceTier2: 9900, priceTier3: 11160, packingSize: '198*155*87', cbm: 2.7, volumeWeight: 446, actualWeight: 370, airPump: '009', fan: '550W' },
+        { id: 'kh29', series: 'A', model: '1410A', power: '130W', price: 9600, priceTier2: 10300, priceTier3: 11520, packingSize: '198*155*87', cbm: 2.7, volumeWeight: 446, actualWeight: 390, airPump: '009', fan: '550W' },
+        { id: 'kh30', series: 'A', model: '1410A', power: '150W', price: 10200, priceTier2: 10950, priceTier3: 12240, packingSize: '219*155*87', cbm: 3, volumeWeight: 493, actualWeight: 370, airPump: '009', fan: '550W' },
+        { id: 'kh31', series: 'B1', model: '5030B1', power: '50W', price: 5226, priceTier2: 5592, priceTier3: 6271, packingSize: '110*80*87', cbm: 0.8, volumeWeight: 128, actualWeight: 103, airPump: '', fan: '' },
+        { id: 'kh32', series: 'B1', model: '5030B1', power: '60W', price: 5528, priceTier2: 5914, priceTier3: 6633, packingSize: '128*80*87', cbm: 0.9, volumeWeight: 149, actualWeight: 118, airPump: '', fan: '' },
         { id: 'kh33', series: 'B1', model: '5030B1', power: '80W', price: 5829, priceTier2: 6237, priceTier3: 6995, packingSize: '155*80*87', cbm: 1.1, volumeWeight: 180, actualWeight: 0 },
-        { id: 'kh34', series: 'B1', model: '6040B1', power: '50W', price: 5427, priceTier2: 5807, priceTier3: 6512, packingSize: '120*90*87', cbm: 1, volumeWeight: 157, actualWeight: 123 },
-        { id: 'kh35', series: 'B1', model: '6040B1', power: '60W', price: 5729, priceTier2: 6129, priceTier3: 6874, packingSize: '128*90*87', cbm: 1.1, volumeWeight: 168, actualWeight: 127 },
-        { id: 'kh36', series: 'B1', model: '6040B1', power: '80W', price: 6030, priceTier2: 6452, priceTier3: 7236, packingSize: '155*90*87', cbm: 1.3, volumeWeight: 203, actualWeight: 130 },
-        { id: 'kh37', series: 'B1', model: '6040B1', power: '100W', price: 6633, priceTier2: 7097, priceTier3: 7960, packingSize: '174*90*87', cbm: 1.4, volumeWeight: 228, actualWeight: 140 },
-        { id: 'kh38', series: 'B1', model: '7050B1', power: '60W', price: 5930, priceTier2: 6345, priceTier3: 7115, packingSize: '127*97*87', cbm: 1.1, volumeWeight: 179, actualWeight: 150 },
-        { id: 'kh39', series: 'B1', model: '7050B1', power: '80W', price: 6231, priceTier2: 6667, priceTier3: 7477, packingSize: '152*97*87', cbm: 1.3, volumeWeight: 214, actualWeight: 160 },
-        { id: 'kh40', series: 'B1', model: '7050B1', power: '100W', price: 6834, priceTier2: 7312, priceTier3: 8201, packingSize: '174*97*87', cbm: 1.5, volumeWeight: 245, actualWeight: 172 },
-        { id: 'kh41', series: 'B1', model: '9060B1', power: '80W', price: 7236, priceTier2: 7743, priceTier3: 8683, packingSize: '149*114*87', cbm: 1.5, volumeWeight: 247, actualWeight: 215 },
-        { id: 'kh42', series: 'B1', model: '9060B1', power: '100W', price: 7638, priceTier2: 8173, priceTier3: 9166, packingSize: '174*114*87', cbm: 1.8, volumeWeight: 288, actualWeight: 230 },
-        { id: 'kh43', series: 'B1', model: '9060B1', power: '130W', price: 8040, priceTier2: 8603, priceTier3: 9648, packingSize: '198*114*87', cbm: 2, volumeWeight: 328, actualWeight: 245 },
-        { id: 'kh44', series: 'B1', model: '9060B1', power: '150W', price: 8844, priceTier2: 9463, priceTier3: 10613, packingSize: '217*114*87', cbm: 2.2, volumeWeight: 359, actualWeight: 255 },
+        { id: 'kh34', series: 'B1', model: '6040B1', power: '50W', price: 5427, priceTier2: 5807, priceTier3: 6512, packingSize: '120*90*87', cbm: 1, volumeWeight: 157, actualWeight: 123, airPump: '', fan: '' },
+        { id: 'kh35', series: 'B1', model: '6040B1', power: '60W', price: 5729, priceTier2: 6129, priceTier3: 6874, packingSize: '128*90*87', cbm: 1.1, volumeWeight: 168, actualWeight: 127, airPump: '', fan: '' },
+        { id: 'kh36', series: 'B1', model: '6040B1', power: '80W', price: 6030, priceTier2: 6452, priceTier3: 7236, packingSize: '155*90*87', cbm: 1.3, volumeWeight: 203, actualWeight: 130, airPump: '', fan: '' },
+        { id: 'kh37', series: 'B1', model: '6040B1', power: '100W', price: 6633, priceTier2: 7097, priceTier3: 7960, packingSize: '174*90*87', cbm: 1.4, volumeWeight: 228, actualWeight: 140, airPump: '', fan: '' },
+        { id: 'kh38', series: 'B1', model: '7050B1', power: '60W', price: 5930, priceTier2: 6345, priceTier3: 7115, packingSize: '127*97*87', cbm: 1.1, volumeWeight: 179, actualWeight: 150, airPump: '', fan: '' },
+        { id: 'kh39', series: 'B1', model: '7050B1', power: '80W', price: 6231, priceTier2: 6667, priceTier3: 7477, packingSize: '152*97*87', cbm: 1.3, volumeWeight: 214, actualWeight: 160, airPump: '', fan: '' },
+        { id: 'kh40', series: 'B1', model: '7050B1', power: '100W', price: 6834, priceTier2: 7312, priceTier3: 8201, packingSize: '174*97*87', cbm: 1.5, volumeWeight: 245, actualWeight: 172, airPump: '', fan: '' },
+        { id: 'kh41', series: 'B1', model: '9060B1', power: '80W', price: 7236, priceTier2: 7743, priceTier3: 8683, packingSize: '149*114*87', cbm: 1.5, volumeWeight: 247, actualWeight: 215, airPump: '', fan: '' },
+        { id: 'kh42', series: 'B1', model: '9060B1', power: '100W', price: 7638, priceTier2: 8173, priceTier3: 9166, packingSize: '174*114*87', cbm: 1.8, volumeWeight: 288, actualWeight: 230, airPump: '', fan: '' },
+        { id: 'kh43', series: 'B1', model: '9060B1', power: '130W', price: 8040, priceTier2: 8603, priceTier3: 9648, packingSize: '198*114*87', cbm: 2, volumeWeight: 328, actualWeight: 245, airPump: '', fan: '' },
+        { id: 'kh44', series: 'B1', model: '9060B1', power: '150W', price: 8844, priceTier2: 9463, priceTier3: 10613, packingSize: '217*114*87', cbm: 2.2, volumeWeight: 359, actualWeight: 255, airPump: '', fan: '' },
         { id: 'kh45', series: 'B1', model: '1060B1', power: '80W', price: 7538, priceTier2: 8065, priceTier3: 9045, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
         { id: 'kh46', series: 'B1', model: '1060B1', power: '100W', price: 7940, priceTier2: 8495, priceTier3: 9527, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
         { id: 'kh47', series: 'B1', model: '1060B1', power: '130W', price: 8342, priceTier2: 8925, priceTier3: 10010, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
         { id: 'kh48', series: 'B1', model: '1060B1', power: '150W', price: 9146, priceTier2: 9786, priceTier3: 10975, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh49', series: 'B1', model: '1080B1', power: '80W', price: 7839, priceTier2: 8388, priceTier3: 9407, packingSize: '158*130*87', cbm: 1.8, volumeWeight: 298, actualWeight: 245 },
-        { id: 'kh50', series: 'B1', model: '1080B1', power: '100W', price: 8241, priceTier2: 8818, priceTier3: 9889, packingSize: '174*130*87', cbm: 2, volumeWeight: 328, actualWeight: 256 },
-        { id: 'kh51', series: 'B1', model: '1080B1', power: '130W', price: 8643, priceTier2: 9248, priceTier3: 10372, packingSize: '198*130*87', cbm: 2.3, volumeWeight: 374, actualWeight: 276 },
-        { id: 'kh52', series: 'B1', model: '1080B1', power: '150W', price: 9447, priceTier2: 10108, priceTier3: 11336, packingSize: '219*145*87', cbm: 2.8, volumeWeight: 461, actualWeight: 325 },
-        { id: 'kh53', series: 'B1', model: '1490B1', power: '80W', price: 8643, priceTier2: 9248, priceTier3: 10372, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 360 },
-        { id: 'kh54', series: 'B1', model: '1490B1', power: '100W', price: 9045, priceTier2: 9678, priceTier3: 10854, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 360 },
-        { id: 'kh55', series: 'B1', model: '1490B1', power: '130W', price: 9347, priceTier2: 10001, priceTier3: 11216, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 365 },
-        { id: 'kh56', series: 'B1', model: '1490B1', power: '150W', price: 9950, priceTier2: 10646, priceTier3: 11939, packingSize: '219*145*87', cbm: 2.8, volumeWeight: 461, actualWeight: 370 },
-        { id: 'kh57', series: 'C', model: '9060C', power: '80W', price: 9100, priceTier2: 9740, priceTier3: 10920, packingSize: '155*115*128', cbm: 2.3, volumeWeight: 381, actualWeight: 300 },
-        { id: 'kh58', series: 'C', model: '9060C', power: '100W', price: 9600, priceTier2: 10280, priceTier3: 11520, packingSize: '175*115*128', cbm: 2.6, volumeWeight: 430, actualWeight: 320 },
-        { id: 'kh59', series: 'C', model: '9060C', power: '130W', price: 10300, priceTier2: 11020, priceTier3: 12360, packingSize: '195*115*128', cbm: 2.9, volumeWeight: 479, actualWeight: 330 },
-        { id: 'kh60', series: 'C', model: '1080C', power: '80W', price: 9600, priceTier2: 10280, priceTier3: 11520, packingSize: '165*135*128', cbm: 2.9, volumeWeight: 476, actualWeight: 340 },
-        { id: 'kh61', series: 'C', model: '1080C', power: '100W', price: 10100, priceTier2: 10810, priceTier3: 12120, packingSize: '175*135*128', cbm: 3.1, volumeWeight: 504, actualWeight: 350 },
-        { id: 'kh62', series: 'C', model: '1080C', power: '130W', price: 10800, priceTier2: 11560, priceTier3: 12960, packingSize: '195*135*128', cbm: 3.4, volumeWeight: 556, actualWeight: 366 },
-        { id: 'kh63', series: 'C', model: '1290C', power: '100W', price: 10700, priceTier2: 11450, priceTier3: 12840, packingSize: '175*145*128', cbm: 3.3, volumeWeight: 542, actualWeight: 0 },
-        { id: 'kh64', series: 'C', model: '1290C', power: '130W', price: 11200, priceTier2: 11990, priceTier3: 13440, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh65', series: 'C', model: '1290C', power: '150W', price: 12200, priceTier2: 13060, priceTier3: 14640, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh66', series: 'C', model: '1290C', power: '180W', price: 13200, priceTier2: 14130, priceTier3: 15840, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh67', series: 'C', model: '1290C', power: '200W', price: 14700, priceTier2: 15730, priceTier3: 17640, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh68', series: 'C', model: '1290C', power: '300W', price: 18200, priceTier2: 19480, priceTier3: 21840, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh69', series: 'C', model: '1390C', power: '100W', price: 11000, priceTier2: 11770, priceTier3: 13200, packingSize: '195*145*128', cbm: 3.6, volumeWeight: 598, actualWeight: 422 },
-        { id: 'kh70', series: 'C', model: '1390C', power: '130W', price: 11500, priceTier2: 12310, priceTier3: 13800, packingSize: '195*145*128', cbm: 3.6, volumeWeight: 598, actualWeight: 422 },
-        { id: 'kh71', series: 'C', model: '1390C', power: '150W', price: 12500, priceTier2: 13380, priceTier3: 15000, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 430 },
-        { id: 'kh72', series: 'C', model: '1390C', power: '180W', price: 13500, priceTier2: 14450, priceTier3: 16200, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 0 },
-        { id: 'kh73', series: 'C', model: '1390C', power: '200W', price: 15000, priceTier2: 16050, priceTier3: 18000, packingSize: '257*145*128', cbm: 4.8, volumeWeight: 795, actualWeight: 455 },
-        { id: 'kh74', series: 'C', model: '1390C', power: '300w', price: 18500, priceTier2: 19800, priceTier3: 22200, packingSize: '219*157*128', cbm: 4.5, volumeWeight: 734, actualWeight: 450 },
-        { id: 'kh75', series: 'C', model: '1310C', power: '100W', price: 11600, priceTier2: 12420, priceTier3: 13920, packingSize: '195*155*128', cbm: 3.9, volumeWeight: 639, actualWeight: 432 },
-        { id: 'kh76', series: 'C', model: '1310C', power: '130W', price: 12100, priceTier2: 12950, priceTier3: 14520, packingSize: '195*155*128', cbm: 3.9, volumeWeight: 639, actualWeight: 432 },
-        { id: 'kh77', series: 'C', model: '1310C', power: '150W', price: 13100, priceTier2: 14020, priceTier3: 15720, packingSize: '215*155*128', cbm: 4.3, volumeWeight: 711, actualWeight: 440 },
-        { id: 'kh78', series: 'C', model: '1310C', power: '180W', price: 14100, priceTier2: 15090, priceTier3: 16920, packingSize: '215*155*128', cbm: 4.3, volumeWeight: 711, actualWeight: 440 },
-        { id: 'kh79', series: 'C', model: '1310C', power: '200W', price: 15100, priceTier2: 16160, priceTier3: 18120, packingSize: '257*155*128', cbm: 5.1, volumeWeight: 850, actualWeight: 465 },
-        { id: 'kh80', series: 'C', model: '1310C', power: '300w', price: 19100, priceTier2: 20440, priceTier3: 22920, packingSize: '215*167*128', cbm: 4.6, volumeWeight: 766, actualWeight: 455 },
-        { id: 'kh81', series: 'C', model: '1490C', power: '100W', price: 11600, priceTier2: 12420, priceTier3: 13920, packingSize: '204*145*128', cbm: 3.8, volumeWeight: 632, actualWeight: 437 },
-        { id: 'kh82', series: 'C', model: '1490C', power: '130W', price: 12100, priceTier2: 12950, priceTier3: 14520, packingSize: '204*145*128', cbm: 3.8, volumeWeight: 632, actualWeight: 437 },
-        { id: 'kh83', series: 'C', model: '1490C', power: '150W', price: 13100, priceTier2: 14020, priceTier3: 15720, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 475 },
-        { id: 'kh84', series: 'C', model: '1490C', power: '180W', price: 14100, priceTier2: 15090, priceTier3: 16920, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 0 },
-        { id: 'kh85', series: 'C', model: '1490C', power: '200W', price: 15100, priceTier2: 16160, priceTier3: 18120, packingSize: '257*145*128', cbm: 4.8, volumeWeight: 795, actualWeight: 463 },
-        { id: 'kh86', series: 'C', model: '1490C', power: '300w', price: 19100, priceTier2: 20440, priceTier3: 22920, packingSize: '219*157*128', cbm: 4.5, volumeWeight: 734, actualWeight: 450 },
-        { id: 'kh87', series: 'C', model: '1410C', power: '100W', price: 12100, priceTier2: 12950, priceTier3: 14520, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh88', series: 'C', model: '1410C', power: '130W', price: 12600, priceTier2: 13490, priceTier3: 15120, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh89', series: 'C', model: '1410C', power: '150W', price: 13600, priceTier2: 14560, priceTier3: 16320, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh90', series: 'C', model: '1410C', power: '180W', price: 14600, priceTier2: 15630, priceTier3: 17520, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh91', series: 'C', model: '1410C', power: '200W', price: 15600, priceTier2: 16700, priceTier3: 18720, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh92', series: 'C', model: '1410C', power: '300w', price: 19600, priceTier2: 20980, priceTier3: 23520, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh93', series: 'C', model: '1610C', power: '100W', price: 13250, priceTier2: 14180, priceTier3: 15900, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 0 },
-        { id: 'kh94', series: 'C', model: '1610C', power: '130W', price: 13750, priceTier2: 14720, priceTier3: 16500, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 0 },
-        { id: 'kh95', series: 'C', model: '1610C', power: '150W', price: 14750, priceTier2: 15782, priceTier3: 17700, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 480 },
-        { id: 'kh96', series: 'C', model: '1610C', power: '180W', price: 15750, priceTier2: 16850, priceTier3: 18900, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 0 },
-        { id: 'kh97', series: 'C', model: '1610C', power: '200W', price: 17050, priceTier2: 18250, priceTier3: 20460, packingSize: '257*155*128', cbm: 5.1, volumeWeight: 850, actualWeight: 500 },
-        { id: 'kh98', series: 'C', model: '1610C', power: '300W', price: 20750, priceTier2: 22200, priceTier3: 24900, packingSize: '225*167*128', cbm: 4.9, volumeWeight: 802, actualWeight: 0 },
-        { id: 'kh99', series: 'C', model: '1810C', power: '100W', price: 14250, priceTier2: 15250, priceTier3: 17100, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0 },
-        { id: 'kh100', series: 'C', model: '1810C', power: '130W', price: 14750, priceTier2: 15790, priceTier3: 17700, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0 },
-        { id: 'kh101', series: 'C', model: '1810C', power: '150W', price: 15750, priceTier2: 16850, priceTier3: 18900, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0 },
-        { id: 'kh102', series: 'C', model: '1810C', power: '180W', price: 16750, priceTier2: 17930, priceTier3: 20100, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0 },
-        { id: 'kh103', series: 'C', model: '1810C', power: '200W', price: 18050, priceTier2: 19320, priceTier3: 21660, packingSize: '257*155*128', cbm: 5.1, volumeWeight: 850, actualWeight: 0 },
-        { id: 'kh104', series: 'C', model: '1810C', power: '300w', price: 21750, priceTier2: 23280, priceTier3: 26100, packingSize: '245*167*128', cbm: 5.3, volumeWeight: 873, actualWeight: 0 },
-        { id: 'kh105', series: 'C', model: '1325C', power: '130W', price: 18500, priceTier2: 19795, priceTier3: 22200, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1100 },
-        { id: 'kh106', series: 'C', model: '1325C', power: '150W', price: 19000, priceTier2: 20330, priceTier3: 22800, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1100 },
-        { id: 'kh107', series: 'C', model: '1325C', power: '180W', price: 20000, priceTier2: 21400, priceTier3: 24000, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1100 },
-        { id: 'kh108', series: 'C', model: '1325C', power: '200W', price: 21500, priceTier2: 23005, priceTier3: 25800, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh109', series: 'C', model: '1325C', power: '300W', price: 25700, priceTier2: 27500, priceTier3: 30840, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1150 },
-        { id: 'kh110', series: 'C', model: '1325C', power: '300W', price: 37000, priceTier2: 39590, priceTier3: 44400, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1150 },
-        { id: 'kh111', series: 'XC', model: '6040XC', power: '60W', price: 6500, priceTier2: 7000, priceTier3: 7800, packingSize: '123*95*114', cbm: 1.4, volumeWeight: 223, actualWeight: 0 },
-        { id: 'kh112', series: 'XC', model: '6040XC', power: '80W', price: 6700, priceTier2: 7200, priceTier3: 8100, packingSize: '153*95*114', cbm: 1.7, volumeWeight: 277, actualWeight: 0 },
-        { id: 'kh113', series: 'XC', model: '6040XC', power: '100W', price: 7300, priceTier2: 7850, priceTier3: 8800, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh114', series: 'XC', model: '7050XC', power: '60W', price: 6800, priceTier2: 7300, priceTier3: 8200, packingSize: '123*103*114', cbm: 1.5, volumeWeight: 241, actualWeight: 0 },
-        { id: 'kh115', series: 'XC', model: '7050XC', power: '80W', price: 7100, priceTier2: 7600, priceTier3: 8600, packingSize: '153*103*114', cbm: 1.8, volumeWeight: 300, actualWeight: 0 },
-        { id: 'kh116', series: 'XC', model: '7050XC', power: '100W', price: 7700, priceTier2: 8300, priceTier3: 9300, packingSize: '178*103*114', cbm: 2.1, volumeWeight: 349, actualWeight: 0 },
-        { id: 'kh117', series: 'XC', model: '9060XC', power: '80W', price: 9000, priceTier2: 9700, priceTier3: 10800, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh118', series: 'XC', model: '9060XC', power: '100W', price: 9500, priceTier2: 10200, priceTier3: 11400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh119', series: 'XC', model: '9060XC', power: '130W', price: 10200, priceTier2: 11000, priceTier3: 12300, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh120', series: 'XC', model: '1080XC', power: '80W', price: 9500, priceTier2: 10200, priceTier3: 11400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh121', series: 'XC', model: '1080XC', power: '100W', price: 10000, priceTier2: 10700, priceTier3: 12000, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh122', series: 'XC', model: '1080XC', power: '130W', price: 10700, priceTier2: 11500, priceTier3: 12900, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh123', series: 'XC', model: '1290XC', power: '100W', price: 10500, priceTier2: 11300, priceTier3: 12600, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh124', series: 'XC', model: '1290XC', power: '130W', price: 11000, priceTier2: 11800, priceTier3: 13200, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh125', series: 'XC', model: '1290XC', power: '150W', price: 12000, priceTier2: 12900, priceTier3: 14400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh126', series: 'XC', model: '1290XC', power: '180W', price: 13000, priceTier2: 14000, priceTier3: 15600, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh127', series: 'XC', model: '1290XC', power: '200W', price: 14500, priceTier2: 15600, priceTier3: 17400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh128', series: 'XC', model: '1290XC', power: '300W', price: 18000, priceTier2: 19300, priceTier3: 21600, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh129', series: 'XC', model: '1390XC', power: '100W', price: 10800, priceTier2: 11600, priceTier3: 12960, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh130', series: 'XC', model: '1390XC', power: '130W', price: 11300, priceTier2: 12100, priceTier3: 13560, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh131', series: 'XC', model: '1390XC', power: '150W', price: 12300, priceTier2: 13200, priceTier3: 14760, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh132', series: 'XC', model: '1390XC', power: '180W', price: 13300, priceTier2: 14300, priceTier3: 15960, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh133', series: 'XC', model: '1390XC', power: '200W', price: 14800, priceTier2: 15900, priceTier3: 17760, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh134', series: 'XC', model: '1390XC', power: '300w', price: 18300, priceTier2: 19600, priceTier3: 21960, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh135', series: 'XC', model: '1310XC', power: '100W', price: 11400, priceTier2: 12200, priceTier3: 13680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh136', series: 'XC', model: '1310XC', power: '130W', price: 11900, priceTier2: 12800, priceTier3: 14280, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh137', series: 'XC', model: '1310XC', power: '150W', price: 12900, priceTier2: 13800, priceTier3: 15480, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh138', series: 'XC', model: '1310XC', power: '180W', price: 13900, priceTier2: 14900, priceTier3: 16680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh139', series: 'XC', model: '1310XC', power: '200W', price: 14900, priceTier2: 16000, priceTier3: 17880, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh140', series: 'XC', model: '1310XC', power: '300w', price: 18900, priceTier2: 20300, priceTier3: 22680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh141', series: 'XC', model: '1490XC', power: '100W', price: 11400, priceTier2: 12200, priceTier3: 13680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh142', series: 'XC', model: '1490XC', power: '130W', price: 11900, priceTier2: 12800, priceTier3: 14280, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh143', series: 'XC', model: '1490XC', power: '150W', price: 12900, priceTier2: 13800, priceTier3: 15480, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh144', series: 'XC', model: '1490XC', power: '180W', price: 13900, priceTier2: 14900, priceTier3: 16680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh145', series: 'XC', model: '1490XC', power: '200W', price: 14900, priceTier2: 16000, priceTier3: 17880, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh146', series: 'XC', model: '1490XC', power: '300w', price: 18900, priceTier2: 20300, priceTier3: 22680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
+        { id: 'kh49', series: 'B1', model: '1080B1', power: '80W', price: 7839, priceTier2: 8388, priceTier3: 9407, packingSize: '158*130*87', cbm: 1.8, volumeWeight: 298, actualWeight: 245, airPump: '', fan: '' },
+        { id: 'kh50', series: 'B1', model: '1080B1', power: '100W', price: 8241, priceTier2: 8818, priceTier3: 9889, packingSize: '174*130*87', cbm: 2, volumeWeight: 328, actualWeight: 256, airPump: '', fan: '' },
+        { id: 'kh51', series: 'B1', model: '1080B1', power: '130W', price: 8643, priceTier2: 9248, priceTier3: 10372, packingSize: '198*130*87', cbm: 2.3, volumeWeight: 374, actualWeight: 276, airPump: '', fan: '' },
+        { id: 'kh52', series: 'B1', model: '1080B1', power: '150W', price: 9447, priceTier2: 10108, priceTier3: 11336, packingSize: '219*145*87', cbm: 2.8, volumeWeight: 461, actualWeight: 325, airPump: '', fan: '' },
+        { id: 'kh53', series: 'B1', model: '1490B1', power: '80W', price: 8643, priceTier2: 9248, priceTier3: 10372, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 360, airPump: '009', fan: '550W' },
+        { id: 'kh54', series: 'B1', model: '1490B1', power: '100W', price: 9045, priceTier2: 9678, priceTier3: 10854, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 360, airPump: '009', fan: '550W' },
+        { id: 'kh55', series: 'B1', model: '1490B1', power: '130W', price: 9347, priceTier2: 10001, priceTier3: 11216, packingSize: '198*145*87', cbm: 2.5, volumeWeight: 417, actualWeight: 365, airPump: '009', fan: '550W' },
+        { id: 'kh56', series: 'B1', model: '1490B1', power: '150W', price: 9950, priceTier2: 10646, priceTier3: 11939, packingSize: '219*145*87', cbm: 2.8, volumeWeight: 461, actualWeight: 370, airPump: '009', fan: '550W' },
+        { id: 'kh57', series: 'C', model: '9060C', power: '80W', price: 9100, priceTier2: 9740, priceTier3: 10920, packingSize: '155*115*128', cbm: 2.3, volumeWeight: 381, actualWeight: 300, airPump: '006', fan: '550W' },
+        { id: 'kh58', series: 'C', model: '9060C', power: '100W', price: 9600, priceTier2: 10280, priceTier3: 11520, packingSize: '175*115*128', cbm: 2.6, volumeWeight: 430, actualWeight: 320, airPump: '006', fan: '550W' },
+        { id: 'kh59', series: 'C', model: '9060C', power: '130W', price: 10300, priceTier2: 11020, priceTier3: 12360, packingSize: '195*115*128', cbm: 2.9, volumeWeight: 479, actualWeight: 330, airPump: '006', fan: '550W' },
+        { id: 'kh60', series: 'C', model: '1080C', power: '80W', price: 9600, priceTier2: 10280, priceTier3: 11520, packingSize: '165*135*128', cbm: 2.9, volumeWeight: 476, actualWeight: 340, airPump: '006', fan: '550W' },
+        { id: 'kh61', series: 'C', model: '1080C', power: '100W', price: 10100, priceTier2: 10810, priceTier3: 12120, packingSize: '175*135*128', cbm: 3.1, volumeWeight: 504, actualWeight: 350, airPump: '006', fan: '550W' },
+        { id: 'kh62', series: 'C', model: '1080C', power: '130W', price: 10800, priceTier2: 11560, priceTier3: 12960, packingSize: '195*135*128', cbm: 3.4, volumeWeight: 556, actualWeight: 366, airPump: '006', fan: '550W' },
+        { id: 'kh63', series: 'C', model: '1290C', power: '100W', price: 10700, priceTier2: 11450, priceTier3: 12840, packingSize: '175*145*128', cbm: 3.3, volumeWeight: 542, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh64', series: 'C', model: '1290C', power: '130W', price: 11200, priceTier2: 11990, priceTier3: 13440, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh65', series: 'C', model: '1290C', power: '150W', price: 12200, priceTier2: 13060, priceTier3: 14640, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh66', series: 'C', model: '1290C', power: '180W', price: 13200, priceTier2: 14130, priceTier3: 15840, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh67', series: 'C', model: '1290C', power: '200W', price: 14700, priceTier2: 15730, priceTier3: 17640, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh68', series: 'C', model: '1290C', power: '300W', price: 18200, priceTier2: 19480, priceTier3: 21840, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh69', series: 'C', model: '1390C', power: '100W', price: 11000, priceTier2: 11770, priceTier3: 13200, packingSize: '195*145*128', cbm: 3.6, volumeWeight: 598, actualWeight: 422, airPump: '009', fan: '550W' },
+        { id: 'kh70', series: 'C', model: '1390C', power: '130W', price: 11500, priceTier2: 12310, priceTier3: 13800, packingSize: '195*145*128', cbm: 3.6, volumeWeight: 598, actualWeight: 422, airPump: '009', fan: '550W' },
+        { id: 'kh71', series: 'C', model: '1390C', power: '150W', price: 12500, priceTier2: 13380, priceTier3: 15000, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 430, airPump: '009', fan: '550W' },
+        { id: 'kh72', series: 'C', model: '1390C', power: '180W', price: 13500, priceTier2: 14450, priceTier3: 16200, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh73', series: 'C', model: '1390C', power: '200W', price: 15000, priceTier2: 16050, priceTier3: 18000, packingSize: '257*145*128', cbm: 4.8, volumeWeight: 795, actualWeight: 455, airPump: '009', fan: '550W' },
+        { id: 'kh74', series: 'C', model: '1390C', power: '300w', price: 18500, priceTier2: 19800, priceTier3: 22200, packingSize: '219*157*128', cbm: 4.5, volumeWeight: 734, actualWeight: 450, airPump: '009', fan: '550W' },
+        { id: 'kh75', series: 'C', model: '1310C', power: '100W', price: 11600, priceTier2: 12420, priceTier3: 13920, packingSize: '195*155*128', cbm: 3.9, volumeWeight: 639, actualWeight: 432, airPump: '009', fan: '550W' },
+        { id: 'kh76', series: 'C', model: '1310C', power: '130W', price: 12100, priceTier2: 12950, priceTier3: 14520, packingSize: '195*155*128', cbm: 3.9, volumeWeight: 639, actualWeight: 432, airPump: '009', fan: '550W' },
+        { id: 'kh77', series: 'C', model: '1310C', power: '150W', price: 13100, priceTier2: 14020, priceTier3: 15720, packingSize: '215*155*128', cbm: 4.3, volumeWeight: 711, actualWeight: 440, airPump: '009', fan: '550W' },
+        { id: 'kh78', series: 'C', model: '1310C', power: '180W', price: 14100, priceTier2: 15090, priceTier3: 16920, packingSize: '215*155*128', cbm: 4.3, volumeWeight: 711, actualWeight: 440, airPump: '009', fan: '550W' },
+        { id: 'kh79', series: 'C', model: '1310C', power: '200W', price: 15100, priceTier2: 16160, priceTier3: 18120, packingSize: '257*155*128', cbm: 5.1, volumeWeight: 850, actualWeight: 465, airPump: '009', fan: '550W' },
+        { id: 'kh80', series: 'C', model: '1310C', power: '300w', price: 19100, priceTier2: 20440, priceTier3: 22920, packingSize: '215*167*128', cbm: 4.6, volumeWeight: 766, actualWeight: 455, airPump: '009', fan: '550W' },
+        { id: 'kh81', series: 'C', model: '1490C', power: '100W', price: 11600, priceTier2: 12420, priceTier3: 13920, packingSize: '204*145*128', cbm: 3.8, volumeWeight: 632, actualWeight: 437, airPump: '009', fan: '550W' },
+        { id: 'kh82', series: 'C', model: '1490C', power: '130W', price: 12100, priceTier2: 12950, priceTier3: 14520, packingSize: '204*145*128', cbm: 3.8, volumeWeight: 632, actualWeight: 437, airPump: '009', fan: '550W' },
+        { id: 'kh83', series: 'C', model: '1490C', power: '150W', price: 13100, priceTier2: 14020, priceTier3: 15720, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 475, airPump: '009', fan: '550W' },
+        { id: 'kh84', series: 'C', model: '1490C', power: '180W', price: 14100, priceTier2: 15090, priceTier3: 16920, packingSize: '217*145*128', cbm: 4.1, volumeWeight: 672, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh85', series: 'C', model: '1490C', power: '200W', price: 15100, priceTier2: 16160, priceTier3: 18120, packingSize: '257*145*128', cbm: 4.8, volumeWeight: 795, actualWeight: 463, airPump: '009', fan: '550W' },
+        { id: 'kh86', series: 'C', model: '1490C', power: '300w', price: 19100, priceTier2: 20440, priceTier3: 22920, packingSize: '219*157*128', cbm: 4.5, volumeWeight: 734, actualWeight: 450, airPump: '009', fan: '550W' },
+        { id: 'kh87', series: 'C', model: '1410C', power: '100W', price: 12100, priceTier2: 12950, priceTier3: 14520, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh88', series: 'C', model: '1410C', power: '130W', price: 12600, priceTier2: 13490, priceTier3: 15120, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh89', series: 'C', model: '1410C', power: '150W', price: 13600, priceTier2: 14560, priceTier3: 16320, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh90', series: 'C', model: '1410C', power: '180W', price: 14600, priceTier2: 15630, priceTier3: 17520, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh91', series: 'C', model: '1410C', power: '200W', price: 15600, priceTier2: 16700, priceTier3: 18720, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh92', series: 'C', model: '1410C', power: '300w', price: 19600, priceTier2: 20980, priceTier3: 23520, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh93', series: 'C', model: '1610C', power: '100W', price: 13250, priceTier2: 14180, priceTier3: 15900, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh94', series: 'C', model: '1610C', power: '130W', price: 13750, priceTier2: 14720, priceTier3: 16500, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh95', series: 'C', model: '1610C', power: '150W', price: 14750, priceTier2: 15782, priceTier3: 17700, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 480, airPump: '012', fan: '550W' },
+        { id: 'kh96', series: 'C', model: '1610C', power: '180W', price: 15750, priceTier2: 16850, priceTier3: 18900, packingSize: '225*155*128', cbm: 4.5, volumeWeight: 744, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh97', series: 'C', model: '1610C', power: '200W', price: 17050, priceTier2: 18250, priceTier3: 20460, packingSize: '257*155*128', cbm: 5.1, volumeWeight: 850, actualWeight: 500, airPump: '012', fan: '550W' },
+        { id: 'kh98', series: 'C', model: '1610C', power: '300W', price: 20750, priceTier2: 22200, priceTier3: 24900, packingSize: '225*167*128', cbm: 4.9, volumeWeight: 802, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh99', series: 'C', model: '1810C', power: '100W', price: 14250, priceTier2: 15250, priceTier3: 17100, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh100', series: 'C', model: '1810C', power: '130W', price: 14750, priceTier2: 15790, priceTier3: 17700, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh101', series: 'C', model: '1810C', power: '150W', price: 15750, priceTier2: 16850, priceTier3: 18900, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh102', series: 'C', model: '1810C', power: '180W', price: 16750, priceTier2: 17930, priceTier3: 20100, packingSize: '245*155*128', cbm: 4.9, volumeWeight: 807, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh103', series: 'C', model: '1810C', power: '200W', price: 18050, priceTier2: 19320, priceTier3: 21660, packingSize: '257*155*128', cbm: 5.1, volumeWeight: 850, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh104', series: 'C', model: '1810C', power: '300w', price: 21750, priceTier2: 23280, priceTier3: 26100, packingSize: '245*167*128', cbm: 5.3, volumeWeight: 873, actualWeight: 0, airPump: '012', fan: '550W' },
+        { id: 'kh105', series: '1325C', model: '1325C', power: '130W', price: 18500, priceTier2: 19795, priceTier3: 22200, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1100, airPump: '016', fan: '550W*2' },
+        { id: 'kh106', series: '1325C', model: '1325C', power: '150W', price: 19000, priceTier2: 20330, priceTier3: 22800, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1100, airPump: '016', fan: '550W*2' },
+        { id: 'kh107', series: '1325C', model: '1325C', power: '180W', price: 20000, priceTier2: 21400, priceTier3: 24000, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1100, airPump: '016', fan: '550W*2' },
+        { id: 'kh108', series: '1325C', model: '1325C', power: '200W', price: 21500, priceTier2: 23005, priceTier3: 25800, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '016', fan: '550W*2' },
+        { id: 'kh109', series: '1325C', model: '1325C', power: '300W', price: 25700, priceTier2: 27500, priceTier3: 30840, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1150, airPump: '016', fan: '550W*2' },
+        { id: 'kh110', series: '1325C', model: '1325C', power: '300W', price: 37000, priceTier2: 39590, priceTier3: 44400, packingSize: '375*217*136', cbm: 11.1, volumeWeight: 1845, actualWeight: 1150, airPump: '016', fan: '550W*2' },
+        { id: 'kh111', series: 'XC', model: '6040XC', power: '60W', price: 6500, priceTier2: 7000, priceTier3: 7800, packingSize: '123*95*114', cbm: 1.4, volumeWeight: 223, actualWeight: 0, airPump: '004', fan: '550W' },
+        { id: 'kh112', series: 'XC', model: '6040XC', power: '80W', price: 6700, priceTier2: 7200, priceTier3: 8100, packingSize: '153*95*114', cbm: 1.7, volumeWeight: 277, actualWeight: 0, airPump: '004', fan: '550W' },
+        { id: 'kh113', series: 'XC', model: '6040XC', power: '100W', price: 7300, priceTier2: 7850, priceTier3: 8800, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '004', fan: '550W' },
+        { id: 'kh114', series: 'XC', model: '7050XC', power: '60W', price: 6800, priceTier2: 7300, priceTier3: 8200, packingSize: '123*103*114', cbm: 1.5, volumeWeight: 241, actualWeight: 0, airPump: '004', fan: '550W' },
+        { id: 'kh115', series: 'XC', model: '7050XC', power: '80W', price: 7100, priceTier2: 7600, priceTier3: 8600, packingSize: '153*103*114', cbm: 1.8, volumeWeight: 300, actualWeight: 0, airPump: '004', fan: '550W' },
+        { id: 'kh116', series: 'XC', model: '7050XC', power: '100W', price: 7700, priceTier2: 8300, priceTier3: 9300, packingSize: '178*103*114', cbm: 2.1, volumeWeight: 349, actualWeight: 0, airPump: '004', fan: '550W' },
+        { id: 'kh117', series: 'XC', model: '9060XC', power: '80W', price: 9000, priceTier2: 9700, priceTier3: 10800, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '006', fan: '550W' },
+        { id: 'kh118', series: 'XC', model: '9060XC', power: '100W', price: 9500, priceTier2: 10200, priceTier3: 11400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '006', fan: '550W' },
+        { id: 'kh119', series: 'XC', model: '9060XC', power: '130W', price: 10200, priceTier2: 11000, priceTier3: 12300, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '006', fan: '550W' },
+        { id: 'kh120', series: 'XC', model: '1080XC', power: '80W', price: 9500, priceTier2: 10200, priceTier3: 11400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '006', fan: '550W' },
+        { id: 'kh121', series: 'XC', model: '1080XC', power: '100W', price: 10000, priceTier2: 10700, priceTier3: 12000, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '006', fan: '550W' },
+        { id: 'kh122', series: 'XC', model: '1080XC', power: '130W', price: 10700, priceTier2: 11500, priceTier3: 12900, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '006', fan: '550W' },
+        { id: 'kh123', series: 'XC', model: '1290XC', power: '100W', price: 10500, priceTier2: 11300, priceTier3: 12600, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh124', series: 'XC', model: '1290XC', power: '130W', price: 11000, priceTier2: 11800, priceTier3: 13200, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh125', series: 'XC', model: '1290XC', power: '150W', price: 12000, priceTier2: 12900, priceTier3: 14400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh126', series: 'XC', model: '1290XC', power: '180W', price: 13000, priceTier2: 14000, priceTier3: 15600, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh127', series: 'XC', model: '1290XC', power: '200W', price: 14500, priceTier2: 15600, priceTier3: 17400, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh128', series: 'XC', model: '1290XC', power: '300W', price: 18000, priceTier2: 19300, priceTier3: 21600, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh129', series: 'XC', model: '1390XC', power: '100W', price: 10800, priceTier2: 11600, priceTier3: 12960, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh130', series: 'XC', model: '1390XC', power: '130W', price: 11300, priceTier2: 12100, priceTier3: 13560, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh131', series: 'XC', model: '1390XC', power: '150W', price: 12300, priceTier2: 13200, priceTier3: 14760, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh132', series: 'XC', model: '1390XC', power: '180W', price: 13300, priceTier2: 14300, priceTier3: 15960, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh133', series: 'XC', model: '1390XC', power: '200W', price: 14800, priceTier2: 15900, priceTier3: 17760, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh134', series: 'XC', model: '1390XC', power: '300w', price: 18300, priceTier2: 19600, priceTier3: 21960, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh135', series: 'XC', model: '1310XC', power: '100W', price: 11400, priceTier2: 12200, priceTier3: 13680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh136', series: 'XC', model: '1310XC', power: '130W', price: 11900, priceTier2: 12800, priceTier3: 14280, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh137', series: 'XC', model: '1310XC', power: '150W', price: 12900, priceTier2: 13800, priceTier3: 15480, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh138', series: 'XC', model: '1310XC', power: '180W', price: 13900, priceTier2: 14900, priceTier3: 16680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh139', series: 'XC', model: '1310XC', power: '200W', price: 14900, priceTier2: 16000, priceTier3: 17880, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh140', series: 'XC', model: '1310XC', power: '300w', price: 18900, priceTier2: 20300, priceTier3: 22680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh141', series: 'XC', model: '1490XC', power: '100W', price: 11400, priceTier2: 12200, priceTier3: 13680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh142', series: 'XC', model: '1490XC', power: '130W', price: 11900, priceTier2: 12800, priceTier3: 14280, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh143', series: 'XC', model: '1490XC', power: '150W', price: 12900, priceTier2: 13800, priceTier3: 15480, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh144', series: 'XC', model: '1490XC', power: '180W', price: 13900, priceTier2: 14900, priceTier3: 16680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh145', series: 'XC', model: '1490XC', power: '200W', price: 14900, priceTier2: 16000, priceTier3: 17880, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
+        { id: 'kh146', series: 'XC', model: '1490XC', power: '300w', price: 18900, priceTier2: 20300, priceTier3: 22680, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0, airPump: '009', fan: '550W' },
         { id: 'kh147', series: 'Marker', model: 'Raycus', power: '20W-QS', price: 5330, priceTier2: 5703, priceTier3: 6400, packingSize: '76*46*85', cbm: 0.3, volumeWeight: 50, actualWeight: 55 },
         { id: 'kh148', series: 'Marker', model: 'Raycus', power: '20W-QE', price: 6950, priceTier2: 7440, priceTier3: 8340, packingSize: '76*46*85', cbm: 0.3, volumeWeight: 50, actualWeight: 55 },
         { id: 'kh149', series: 'Marker', model: 'Raycus', power: '30w-QS', price: 6100, priceTier2: 6530, priceTier3: 7320, packingSize: '76*46*85', cbm: 0.3, volumeWeight: 50, actualWeight: 55 },
@@ -2561,8 +2543,8 @@
         { id: 'kh176', series: 'Marker', model: 'UV-inner', power: '10W-LG', price: 21000, priceTier2: 22500, priceTier3: 25200, packingSize: '77*77*96', cbm: 0.6, volumeWeight: 95, actualWeight: 95 },
         { id: 'kh177', series: 'Marker', model: 'UV-inner', power: '5WJPT', price: 13800, priceTier2: 14770, priceTier3: 16560, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
         { id: 'kh178', series: 'Marker', model: 'UV-inner', power: '10W-JPT', price: 26000, priceTier2: 27820, priceTier3: 31200, packingSize: '', cbm: 0, volumeWeight: 0, actualWeight: 0 },
-        { id: 'kh179', series: 'Desktop', model: '3020', power: '40W', price: 1500, priceTier2: 1610, priceTier3: 1800, packingSize: '92*62*39', cbm: 0.3, volumeWeight: 38, actualWeight: 19 },
-        { id: 'kh180', series: 'Desktop', model: '3020', power: '50W', price: 1600, priceTier2: 1720, priceTier3: 1920, packingSize: '104*64*54', cbm: 0.4, volumeWeight: 60, actualWeight: 35 },
+        { id: 'kh179', series: 'Desktop', model: '3020', power: '40W', price: 1500, priceTier2: 1610, priceTier3: 1800, packingSize: '92*62*39', cbm: 0.3, volumeWeight: 38, actualWeight: 19, airPump: '', fan: '' },
+        { id: 'kh180', series: 'Desktop', model: '3020', power: '50W', price: 1600, priceTier2: 1720, priceTier3: 1920, packingSize: '104*64*54', cbm: 0.4, volumeWeight: 60, actualWeight: 35, airPump: '', fan: '' },
         { id: 'kh181', series: 'Desktop', model: '4040-M3', power: '40W', price: 2800, priceTier2: 3000, priceTier3: 3360, packingSize: '118*82*43', cbm: 0.5, volumeWeight: 68, actualWeight: 60 },
         { id: 'kh182', series: 'Desktop', model: '6040-M3', power: '40W', price: 3200, priceTier2: 3430, priceTier3: 3840, packingSize: '118*82*43', cbm: 0.5, volumeWeight: 68, actualWeight: 60 },
         { id: 'kh183', series: 'Desktop', model: '4040-RD', power: '40W', price: 4600, priceTier2: 4930, priceTier3: 5520, packingSize: '118*82*43', cbm: 0.5, volumeWeight: 68, actualWeight: 60 },
@@ -2571,10 +2553,10 @@
         { id: 'kh186', series: 'Desktop', model: '6040-M3', power: '50W', price: 3300, priceTier2: 3540, priceTier3: 3960, packingSize: '118*82*43', cbm: 0.5, volumeWeight: 68, actualWeight: 60 },
         { id: 'kh187', series: 'Desktop', model: '4040-RD', power: '50W', price: 4700, priceTier2: 5030, priceTier3: 5640, packingSize: '118*82*43', cbm: 0.5, volumeWeight: 68, actualWeight: 60 },
         { id: 'kh188', series: 'Desktop', model: '6040-RD', power: '50W', price: 5100, priceTier2: 5460, priceTier3: 6120, packingSize: '118*82*43', cbm: 0.5, volumeWeight: 68, actualWeight: 60 },
-        { id: 'kh189', series: 'Desktop', model: '4040-M3', power: '60W', price: 3500, priceTier2: 3750, priceTier3: 4200, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 65 },
-        { id: 'kh190', series: 'Desktop', model: '6040-M3', power: '60W', price: 3800, priceTier2: 4070, priceTier3: 4560, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 70 },
-        { id: 'kh191', series: 'Desktop', model: '4040-RD', power: '60W', price: 5200, priceTier2: 5570, priceTier3: 6240, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 65 },
-        { id: 'kh192', series: 'Desktop', model: '6040-RD', power: '60W', price: 5600, priceTier2: 6000, priceTier3: 6720, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 70 }
+        { id: 'kh189', series: 'Desktop', model: '4040-M3', power: '60W', price: 3500, priceTier2: 3750, priceTier3: 4200, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 65, airPump: '', fan: '' },
+        { id: 'kh190', series: 'Desktop', model: '6040-M3', power: '60W', price: 3800, priceTier2: 4070, priceTier3: 4560, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 70, airPump: '', fan: '' },
+        { id: 'kh191', series: 'Desktop', model: '4040-RD', power: '60W', price: 5200, priceTier2: 5570, priceTier3: 6240, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 65, airPump: '', fan: '' },
+        { id: 'kh192', series: 'Desktop', model: '6040-RD', power: '60W', price: 5600, priceTier2: 6000, priceTier3: 6720, packingSize: '148*82*43', cbm: 0.6, volumeWeight: 87, actualWeight: 70, airPump: '', fan: '' }
                 // ... 保持原有机器数据不变
                 // 为节省空间，这里省略了大部分机器数据，实际代码中包含所有原始数据
             ],
@@ -2587,35 +2569,24 @@
             { id: 'kh196', name: 'CW5202', model: 'CW5202', price: 1400, priceTier2: 1498, priceTier3: 1680 },
             { id: 'kh197', name: 'CW6000', model: 'CW6000', price: 2600, priceTier2: 2782, priceTier3: 3120 },
             { id: 'kh198', name: 'S&ACW5200', model: 'S&ACW5200', price: 1700, priceTier2: 1819, priceTier3: 2040 },
-            { id: 'kh199', name: 'S&ACW6000', model: 'S&ACW6000', price: 3300, priceTier2: 3531, priceTier3: 3960 }
+            { id: 'kh199', name: 'S&ACW6000', model: 'S&ACW6000', price: 3300, priceTier2: 3531, priceTier3: 3960 },
+            { id: 'kh200', name: 'S&ACW3000', model: '', price: 650, priceTier2: 696, priceTier3: 780 },
                     // ... 保持原有水冷机数据不变
                 ],
                 
                 accessories: [
-            { id: 'kh200', name: 'CCD camera', model: '', price: 2500, priceTier2: 2500, priceTier3: 2500 },
             { id: 'kh201', name: 'Chuck Rotating Shaft', model: '', price: 720, priceTier2: 770, priceTier3: 870 },
             { id: 'kh202', name: 'Auto focus', model: '', price: 300, priceTier2: 300, priceTier3: 300 },
             { id: 'kh203', name: 'A set of spare lenses', model: '', price: 175, priceTier2: 186, priceTier3: 216 },
             { id: 'kh204', name: 'Leadshine two-phase motor', model: '', price: 150, priceTier2: 150, priceTier3: 150 },
             { id: 'kh205', name: 'HIWIN Guide Rail', model: '', price: 1000, priceTier2: 1000, priceTier3: 1000 },
-            { id: 'kh206', name: 'mini camera', model: '', price: 700, priceTier2: 700, priceTier3: 700 }
+            { id: 'kh206', name: 'mini camera', model: '', price: 700, priceTier2: 700, priceTier3: 700 },
+            { id: 'kh207', name: 'CCD camera', model: '', price: 2500, priceTier2: 2500, priceTier3: 2500 },
 
                     // ... 保持原有配件数据不变
                 ],
                 
                 otherAccessories: [
-  { "id": "kh207", "name": "差价科绘换R1（60W）", "price": 240, "priceTier2": 270, "priceTier3": 330 },
-  { "id": "kh208", "name": "差价R3换T2（80W）", "price": 190, "priceTier2": 200, "priceTier3": 200 },
-  { "id": "kh209", "name": "差价R3换W2（80W）", "price": 850, "priceTier2": 910, "priceTier3": 1000 },
-  { "id": "kh210", "name": "差价R3换H2（80W）", "price": 140, "priceTier2": 150, "priceTier3": 160 },
-  { "id": "kh211", "name": "差价R5换T4（100W）", "price": 230, "priceTier2": 240, "priceTier3": 250 },
-  { "id": "kh212", "name": "差价R5换W4（100W）", "price": 1210, "priceTier2": 1280, "priceTier3": 1410 },
-  { "id": "kh213", "name": "差价R5换H4（100W）", "price": 120, "priceTier2": 120, "priceTier3": 140 },
-  { "id": "kh214", "name": "差价R7换T6（130W)", "price": 330, "priceTier2": 350, "priceTier3": 380 },
-  { "id": "kh215", "name": "差价R7换W6（130W）", "price": 2270, "priceTier2": 2420, "priceTier3": 2690 },
-  { "id": "kh216", "name": "差价R7换H6（130W）", "price": 600, "priceTier2": 640, "priceTier3": 720 },
-  { "id": "kh217", "name": "差价R9换W8（150W)", "price": 4540, "priceTier2": 4840, "priceTier3": 5390 },
-  { "id": "kh218", "name": "差价R9换H8（150W）", "price": 970, "priceTier2": 1040, "priceTier3": 1160 },
   { "id": "kh219", "name": "Reci T1", "price": 710, "priceTier2": 760, "priceTier3": 860 },
   { "id": "kh220", "name": "Reci T2", "price": 800, "priceTier2": 860, "priceTier3": 960 },
   { "id": "kh221", "name": "Reci T4", "price": 1150, "priceTier2": 1240, "priceTier3": 1380 },
@@ -2708,12 +2679,6 @@
   { "id": "kh308", "name": "（贰陆）20透镜（进口）", "price": 170, "priceTier2": 182, "priceTier3": 204 },
   { "id": "kh309", "name": "20反镜", "price": 20, "priceTier2": 21, "priceTier3": 24 },
   { "id": "kh310", "name": "25反镜", "price": 35, "priceTier2": 37, "priceTier3": 42 },
-  { "id": "kh311", "name": "30反镜（钼）", "price": 40, "priceTier2": 43, "priceTier3": 48 },
-  { "id": "kh312", "name": "30反镜（硅-镀金）", "price": 50, "priceTier2": 54, "priceTier3": 60 },
-  { "id": "kh313", "name": "神州易刻主板加密狗", "price": 240, "priceTier2": 257, "priceTier3": 288 },
-  { "id": "kh314", "name": "泰智主板/面板一套（型号不确定有客户要再确认）", "price": 1000, "priceTier2": 1070, "priceTier3": 1200 },
-  { "id": "kh315", "name": "泰智A1主板", "price": 800, "priceTier2": 856, "priceTier3": 960 },
-  { "id": "kh316", "name": "", "price": 0, "priceTier2": 0, "priceTier3": 0 },
   { "id": "kh317", "name": "40W激光电源", "price": 145, "priceTier2": 155, "priceTier3": 174 },
   { "id": "kh318", "name": "50W激光电源", "price": 150, "priceTier2": 161, "priceTier3": 180 },
   { "id": "kh319", "name": "60W激光电源", "price": 280, "priceTier2": 300, "priceTier3": 336 },
@@ -2725,58 +2690,8 @@
   { "id": "kh325", "name": "100W激光电源（隔离）（折叠管、双拼管、多高压端）", "price": 480, "priceTier2": 514, "priceTier3": 576 },
   { "id": "kh326", "name": "150W激光电源", "price": 600, "priceTier2": 642, "priceTier3": 720 },
   { "id": "kh327", "name": "150W激光电源（液晶）", "price": 650, "priceTier2": 696, "priceTier3": 780 },
-  { "id": "kh328", "name": "150W激光电源（隔离）（折叠管、双拼管、多高压端）", "price": 600, "priceTier2": 0, "priceTier3": 0 },
-  { "id": "kh329", "name": "150W激光电源（稳压）常用与热刺W8", "price": 655, "priceTier2": 701, "priceTier3": 786 },
-  { "id": "kh330", "name": "150W激光电源（稳压）（液晶）常用与热刺W8", "price": 705, "priceTier2": 754, "priceTier3": 846 },
-  { "id": "kh331", "name": "永利 × 激光电源 × YL-HSP200 × 220V × W", "price": 1000, "priceTier2": 1070, "priceTier3": 1200 },
-  { "id": "kh332", "name": "永利 × 激光电源 × YL-U1×80-100W", "price": 550, "priceTier2": 590, "priceTier3": 660 },
-  { "id": "kh333", "name": "永利 × 激光电源 × YL-U2×130-150W", "price": 770, "priceTier2": 825, "priceTier3": 924 },
-  { "id": "kh334", "name": "睿达主板/面板一套", "price": 1850, "priceTier2": 1980, "priceTier3": 2220 },
-  { "id": "kh335", "name": "睿达RDC6445主板", "price": 1500, "priceTier2": 1605, "priceTier3": 1800 },
-  { "id": "kh336", "name": "睿达RDC6445面板", "price": 600, "priceTier2": 642, "priceTier3": 720 },
-  { "id": "kh337", "name": "睿达RDC6445GT5面板", "price": 800, "priceTier2": 856, "priceTier3": 960 },
-  { "id": "kh338", "name": "睿达RDC6445GT5一套", "price": 1900, "priceTier2": 2033, "priceTier3": 2280 },
-  { "id": "kh339", "name": "睿达RDC6445GT5主板", "price": 1600, "priceTier2": 1712, "priceTier3": 1920 },
-  { "id": "kh340", "name": "睿达RDC8445一套", "price": 1850, "priceTier2": 1980, "priceTier3": 2220 },
-  { "id": "kh341", "name": "睿达RDC8445主板", "price": 1500, "priceTier2": 1605, "priceTier3": 1800 },
-  { "id": "kh342", "name": "睿达RDC8445面板", "price": 600, "priceTier2": 642, "priceTier3": 720 },
-  { "id": "kh343", "name": "睿达RDV6445（CCD）", "price": 4000, "priceTier2": 4280, "priceTier3": 4800 },
-  { "id": "kh344", "name": "M3主板", "price": 120, "priceTier2": 128, "priceTier3": 144 },
-  { "id": "kh345", "name": "杰美康DM542（两相）步进驱动器", "price": 110, "priceTier2": 118, "priceTier3": 132 },
-  { "id": "kh346", "name": "杰美康2DM860C（两相）步进驱动器", "price": 170, "priceTier2": 182, "priceTier3": 205 },
-  { "id": "kh347", "name": "（除味）烟雾净化器", "price": 2800, "priceTier2": 3000, "priceTier3": 3360 },
-  { "id": "kh348", "name": "（除尘、除味）烟雾净化器", "price": 3300, "priceTier2": 3530, "priceTier3": 3960 },
-  { "id": "kh349", "name": "烟雾净化器滤芯（套）", "price": 900, "priceTier2": 970, "priceTier3": 1080 },
-  { "id": "kh350", "name": "红光限位开关", "price": 15, "priceTier2": 16, "priceTier3": 18 },
-  { "id": "kh351", "name": "稳压器1500W（光纤切割机用）", "price": 3000, "priceTier2": 3210, "priceTier3": 3600 },
-  { "id": "kh352", "name": "雕刻机气撑", "price": 10, "priceTier2": 11, "priceTier3": 12 },
-  { "id": "kh353", "name": "齿轮3M-15齿", "price": 10, "priceTier2": 11, "priceTier3": 12 },
-  { "id": "kh354", "name": "金海创?* 15V电源?* SG60W × 100-20V × 2A（打标机振镜电源）", "price": 100, "priceTier2": 107, "priceTier3": 120 },
-  { "id": "kh355", "name": "雕刻机水保护", "price": 20, "priceTier2": 21, "priceTier3": 24 },
   { "id": "kh356", "name": "小57步进电机", "price": 90, "priceTier2": 97, "priceTier3": 108 },
-  { "id": "kh357", "name": "24V5V双路供电电源", "price": 100, "priceTier2": 107, "priceTier3": 120 },
-  { "id": "kh358", "name": "36V供电电源", "price": 150, "priceTier2": 161, "priceTier3": 180 },
-  { "id": "kh359", "name": "钥匙开关", "price": 20, "priceTier2": 21, "priceTier3": 24 },
-  { "id": "kh360", "name": "急停开关", "price": 20, "priceTier2": 21, "priceTier3": 24 },
-  { "id": "kh361", "name": "（稳压器）交流稳压器 × 泰然 × svc-3kva × 110V", "price": 700, "priceTier2": 750, "priceTier3": 840 },
-  { "id": "kh362", "name": "气嘴（调节阀）", "price": 10, "priceTier2": 11, "priceTier3": 12 },
-  { "id": "kh363", "name": "30毫安表", "price": 10, "priceTier2": 11, "priceTier3": 12 },
-  { "id": "kh364", "name": "50毫安电流表", "price": 15, "priceTier2": 16, "priceTier3": 18 },
-  { "id": "kh365", "name": "铝箔烟管*2*15cm", "price": 15, "priceTier2": 16, "priceTier3": 18 },
-  { "id": "kh366", "name": "蓝色橡胶烟管 1m*15cm", "price": 25, "priceTier2": 0, "priceTier3": 0 },
-  { "id": "kh367", "name": "蓝色橡胶烟管 2m*15cm", "price": 50, "priceTier2": 0, "priceTier3": 0 },
-  { "id": "kh368", "name": "24V继电器", "price": 40, "priceTier2": 43, "priceTier3": 48 },
-  { "id": "kh369", "name": "摄像头（睿达 × 彩色相机 × USBMINI5MF Weifu）", "price": 700, "priceTier2": 750, "priceTier3": 840 },
   { "id": "kh370", "name": "睿达无线操作手柄BWK301R", "price": 730, "priceTier2": 781, "priceTier3": 876 },
-  { "id": "kh371", "name": "24齿同步轮", "price": 10, "priceTier2": 11, "priceTier3": 12 },
-  { "id": "kh372", "name": "硅胶管8mm*12mm（米）", "price": 3, "priceTier2": 3.2, "priceTier3": 3.6 },
-  { "id": "kh373", "name": "风扇", "price": 35, "priceTier2": 38, "priceTier3": 42 },
-  { "id": "kh374", "name": "柜式数据线× 1500mm 打标机附件", "price": 10, "priceTier2": 10.7, "priceTier3": 12 },
-  { "id": "kh375", "name": "打标机护目镜", "price": 40, "priceTier2": 43, "priceTier3": 48 },
-  { "id": "kh376", "name": "雕刻机护目镜", "price": 200, "priceTier2": 214, "priceTier3": 240 },
-  { "id": "kh377", "name": "刻章机水泵（外置）", "price": 30, "priceTier2": 32, "priceTier3": 36 },
-  { "id": "kh378", "name": "雕刻机水泵（外置）", "price": 50, "priceTier2": 54, "priceTier3": 60 },
-  { "id": "kh379", "name": "滤波器", "price": 20, "priceTier2": 21, "priceTier3": 24 },
   { "id": "kh380", "name": "003气泵", "price": 110, "priceTier2": 118, "priceTier3": 132 },
   { "id": "kh381", "name": "004气泵", "price": 130, "priceTier2": 139, "priceTier3": 156 },
   { "id": "kh382", "name": "005气泵", "price": 160, "priceTier2": 171, "priceTier3": 192 },
@@ -2784,28 +2699,10 @@
   { "id": "kh384", "name": "008/009气泵", "price": 270, "priceTier2": 289, "priceTier3": 324 },
   { "id": "kh385", "name": "012气泵", "price": 315, "priceTier2": 338, "priceTier3": 378 },
   { "id": "kh386", "name": "016气泵", "price": 395, "priceTier2": 423, "priceTier3": 474 },
-  { "id": "kh387", "name": "开关（合力佳*急停开关）LAY38-02ZS)", "price": 15, "priceTier2": 16, "priceTier3": 18 },
-  { "id": "kh388", "name": "开关（KH*大船型*常开）", "price": 3, "priceTier2": 3.2, "priceTier3": 3.6 },
-  { "id": "kh389", "name": "开关（KH*小船型*常开）", "price": 3, "priceTier2": 3.2, "priceTier3": 3.6 },
-  { "id": "kh390", "name": "开关（KH*升降金属按钮开关*常开）", "price": 3, "priceTier2": 3.2, "priceTier3": 3.6 },
   { "id": "kh391", "name": "小激光头", "price": 100, "priceTier2": 110, "priceTier3": 120 },
   { "id": "kh392", "name": "大激光头", "price": 200, "priceTier2": 220, "priceTier3": 240 },
   { "id": "kh393", "name": "台式电脑", "price": 2400, "priceTier2": 0, "priceTier3": 0 },
   { "id": "kh394", "name": "一体机电脑", "price": 3000, "priceTier2": 0, "priceTier3": 0 },
-  { "id": "kh395", "name": "上银导轨15", "price": 187, "priceTier2": 200, "priceTier3": 225 },
-  { "id": "kh396", "name": "上银导轨20", "price": 207, "priceTier2": 222, "priceTier3": 248 },
-  { "id": "kh397", "name": "上银导轨25", "price": 230, "priceTier2": 246, "priceTier3": 276 },
-  { "id": "kh398", "name": "上银滑块15", "price": 72, "priceTier2": 77, "priceTier3": 86 },
-  { "id": "kh399", "name": "上银滑块20", "price": 89, "priceTier2": 95, "priceTier3": 107 },
-  { "id": "kh400", "name": "上银滑块25", "price": 109, "priceTier2": 117, "priceTier3": 131 },
-  { "id": "kh401", "name": "普通导轨15", "price": 40, "priceTier2": 43, "priceTier3": 48 },
-  { "id": "kh402", "name": "普通导轨20", "price": 41, "priceTier2": 44, "priceTier3": 49 },
-  { "id": "kh403", "name": "普通导轨25", "price": 54, "priceTier2": 58, "priceTier3": 65 },
-  { "id": "kh404", "name": "普通导轨30", "price": 67, "priceTier2": 72, "priceTier3": 80 },
-  { "id": "kh405", "name": "普通滑块15", "price": 17, "priceTier2": 18, "priceTier3": 20 },
-  { "id": "kh406", "name": "普通滑块20", "price": 18, "priceTier2": 19, "priceTier3": 22 },
-  { "id": "kh407", "name": "普通滑块25", "price": 22, "priceTier2": 24, "priceTier3": 26 },
-  { "id": "kh408", "name": "普通滑块30", "price": 35, "priceTier2": 38, "priceTier3": 42 },
   { "id": "kh409", "name": "750漏斗", "price": 150, "priceTier2": 161, "priceTier3": 180 },
   { "id": "kh410", "name": "960漏斗", "price": 170, "priceTier2": 182, "priceTier3": 204 },
   { "id": "kh411", "name": "1390漏斗", "price": 200, "priceTier2": 214, "priceTier3": 240 },
@@ -2826,58 +2723,96 @@
             {
                 id: 'template1',
                 name: 'A系列报价模板',
-                content: `Model {machineModel}
-packing size: {packingSize} cm
-weight: {actualWeight}
-with {waterCooler} industry chiller  {standardAccessories}
+                content: `Model {machineModel}，{laserTube} Laser Tube
+ packing size: {packingSize} cm
+ weight: {actualWeight}
+  {waterCooler} industry chiller ，{standardAccessories}
 
-1. Ruida 8445 control system
-2. Linear Guides 15mm
-3. Red light positioning
-4. 57 stepper motor
-5. Leadshine driver
-6.  250/550W fans and 00？air pump
-7. Honeycomb platform
-8. Plywood box packaging
-9. Electric Lifting Platform 22cm
-==============================
-Total price: {totalUSD}`,
+ 1. Ruida 8445 control system
+ 2. Linear Guides 15mm
+ 3. Red light positioning
+ 4. 57 stepper motor
+ 5. Leadshine driver
+ 6.  Exhaust fan {fan} and air pump {airPump}
+ 7. Honeycomb platform
+ 8. Plywood box packaging
+ 9. Electric Lifting Platform 22cm
+ ==================
+ Total price: {totalUSD}`,
                 lastUsed: null
             },
             {
                 id: 'template2',
                 name: 'C系列报价模板',
-                content: `Model {machineModel}
-packing size: {packingSize} cm
-weight: {actualWeight}
-with {waterCooler} industry chiller,  {standardAccessories}
+                content: `Model {machineModel}，{laserTube} Laser Tube
+ packing size: {packingSize} cm
+ weight: {actualWeight}
+ with {waterCooler} industry chiller,  {standardAccessories}
 
-1. Ruida 8445 control system
-2. Linear Guides 15mm
-3. Red light positioning
-4. Big 57 motor and  leadshine driver
-5. 550W fans and 00？ air pump 
-6. Honeycomb platform
-7. Plywood box packaging
-8. Speed control wheel
-9. Electric Lifting Platform 45cm
-====================================
-Total price: {totalUSD}`,
+ 1. Ruida 8445 control system
+ 2. Linear Guides 15mm
+ 3. Red light positioning
+ 4. Big 57 motor and  leadshine driver
+ 5.  Exhaust fan {fan} and air pump {airPump}
+ 6. Honeycomb platform
+ 7. Plywood box packaging
+ 8. Speed control wheel
+ 9. Electric Lifting Platform
+ ==================
+ Total price: {totalUSD}`,
                 lastUsed: null
             },
             {
                 id: 'template3',
                 name: '通用报价模板',
                 content: `Model {machineModel}
-packing size: {packingSize} cm
-weight: {actualWeight}
-======================
-Total price: {totalUSD}`,
+ packing size: {packingSize} cm
+ weight: {actualWeight}
+ ======================
+ Total price: {totalUSD}`,
+                lastUsed: null
+            },
+            {
+                id: 'template4',
+                name: '1325C报价模板',
+                content: `Model {machineModel}，{laserTube} Laser Tube
+ packing size: {packingSize} cm
+ weight: {actualWeight}
+ with {waterCooler} industry chiller
+
+ 1.Ruida 8445 control system
+ 2. X axis 15mm， Y axis 20mm Linear Guides
+ 3.Red light positioning
+ 4. X axis: big 57 stepper motor
+ 5. Y axis: 86 stepper motor
+ 6. Leadshine drive
+ 7. High quality 101.6mm Focus Lens
+ 8.Plywood Box packaging
+ 9.Wokring area 1300*2500mm
+ 10.Blade platform
+ ======================
+ Total price: {totalUSD}`,
+                lastUsed: null
+            },
+            {
+                id: 'template5',
+                name: '打标机报价模板',
+                content: `Model {machineModel}
+ packing size: {packingSize} cm
+ weight: {actualWeight}
+
+ Model {machineModel}
+ 1. Blue and white casing
+ 2. SINO RC1001 Dual Red Light Galvanometer
+ 3.Field lens 110*110mm （optional）
+ 4.JCZ Genuine Board Card
+ ====================================
+ Total price: {totalUSD}`,
                 lastUsed: null
             }
         ];
 
-        const DEFAULT_EXCHANGE_RATE = 6.6;
+        const DEFAULT_EXCHANGE_RATE = 6.7;
         const DEFAULT_SERVICE_FEE_RATE = 0.03;   // 3%
 
         // ==================== 内置数据区域结束 ====================
@@ -2948,6 +2883,28 @@ weight: {actualWeight}
 ======================
 Total price: {totalUSD}`,
                             lastUsed: null
+                        },
+                        { 
+                            id: 'template4', 
+                            name: '1325C报价模板', 
+                            content: `Model {machineModel}，{laserTube}
+packing size: {packingSize} cm
+weight: {actualWeight}
+with {waterCooler} industry chiller
+
+1.Ruida 8445 control system
+2. X axis 15mm， Y axis 20mm Linear Guides
+3.Red light positioning
+4. X axis: big 57 stepper motor
+5. Y axis: 86 stepper motor
+6. Leadshine drive
+7. High quality 101.6mm Focus Lens
+8.Plywood Box packaging
+9.Wokring area 1300*2500mm
+10.Blade platform
+======================
+Total price: {totalUSD}`,
+                            lastUsed: null
                         }
                     ],
                     currentQuote: {
@@ -2955,6 +2912,8 @@ Total price: {totalUSD}`,
                         selectedModel: '',
                         selectedPower: '',
                         selectedMachine: null,
+                        selectedLaserTubeId: null,
+                        laserTubeUpcharge: 0,
                         selectedWaterCooler: null,
                         selectedAccessories: [],
                         selectedOtherAccessories: [],
@@ -3071,7 +3030,9 @@ Total price: {totalUSD}`,
                                     packingSize: machine.packingSize || '',
                                     cbm: machine.cbm || 0,
                                     volumeWeight: machine.volumeWeight || 0,
-                                    actualWeight: machine.actualWeight || 0
+                                    actualWeight: machine.actualWeight || 0,
+                                    airPump: machine.airPump || '',
+                                    fan: machine.fan || ''
                                 });
                             }
                         });
@@ -3099,76 +3060,6 @@ Total price: {totalUSD}`,
                     } catch (error) {
                         console.error('查找机器失败:', error);
                         return null;
-                    }
-                },
-                
-                // 产品数据操作
-                addProduct(productType, productData) {
-                    try {
-                        const products = this.data.products;
-                        const id = `${productType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                        
-                        const newProduct = {
-                            id,
-                            name: productData.name,
-                            model: productData.model || '',
-                            price: parseFloat(productData.price) || 0,
-                            priceTier2: parseFloat(productData.priceTier2) || 0,
-                            priceTier3: parseFloat(productData.priceTier3) || 0
-                        };
-                        
-                        if (productType === 'waterCooler') {
-                            products.waterCoolers.push(newProduct);
-                        } else if (productType === 'accessory') {
-                            products.accessories.push(newProduct);
-                        } else if (productType === 'otherAccessory') {
-                            products.otherAccessories.push(newProduct);
-                        }
-                        
-                        return id;
-                    } catch (error) {
-                        console.error('添加产品失败:', error);
-                        return null;
-                    }
-                },
-                
-                updateProduct(productId, productData) {
-                    try {
-                        const products = this.data.products;
-                        let productFound = false;
-                        
-                        ['waterCoolers', 'accessories', 'otherAccessories'].forEach(category => {
-                            const index = products[category].findIndex(p => p.id === productId);
-                            if (index !== -1) {
-                                products[category][index] = { ...products[category][index], ...productData };
-                                productFound = true;
-                            }
-                        });
-                        
-                        return productFound;
-                    } catch (error) {
-                        console.error('更新产品失败:', error);
-                        return false;
-                    }
-                },
-                
-                deleteProduct(productId) {
-                    try {
-                        const products = this.data.products;
-                        let deleted = false;
-                        
-                        ['waterCoolers', 'accessories', 'otherAccessories'].forEach(category => {
-                            const index = products[category].findIndex(p => p.id === productId);
-                            if (index !== -1) {
-                                products[category].splice(index, 1);
-                                deleted = true;
-                            }
-                        });
-                        
-                        return deleted;
-                    } catch (error) {
-                        console.error('删除产品失败:', error);
-                        return false;
                     }
                 },
                 
@@ -3260,6 +3151,8 @@ Total price: {totalUSD}`,
                             selectedModel: currentQuote.selectedModel,
                             selectedPower: currentQuote.selectedPower,
                             selectedMachine: currentQuote.selectedMachine,
+                            selectedLaserTubeId: currentQuote.selectedLaserTubeId,
+                            laserTubeUpcharge: currentQuote.laserTubeUpcharge,
                             selectedWaterCooler: currentQuote.selectedWaterCooler,
                             selectedAccessories: currentQuote.selectedAccessories,
                             selectedOtherAccessories: currentQuote.selectedOtherAccessories,
@@ -3386,7 +3279,12 @@ Total price: {totalUSD}`,
                         if (savedData) {
                             const parsedData = JSON.parse(savedData);
                             this.data.exchangeRate = parsedData.exchangeRate || this.data.exchangeRate;
-                            this.data.machines = parsedData.machines || [];
+                            // 兼容性处理：为旧机器数据补全 airPump 和 fan 字段
+                            this.data.machines = (parsedData.machines || []).map(m => ({
+                                ...m,
+                                airPump: m.airPump || '',
+                                fan: m.fan || ''
+                            }));
                             this.data.products = parsedData.products || this.data.products;
                             this.data.templates = parsedData.templates || this.data.templates;
                             this.data.lastBackupTime = parsedData.lastBackupTime || null;
@@ -3402,6 +3300,8 @@ Total price: {totalUSD}`,
                                     selectedModel: item.selectedModel,
                                     selectedPower: item.selectedPower,
                                     selectedMachine: item.selectedMachine,
+                                    selectedLaserTubeId: item.selectedLaserTubeId || null,
+                                    laserTubeUpcharge: item.laserTubeUpcharge || 0,
                                     selectedWaterCooler: item.selectedWaterCooler,
                                     selectedAccessories: item.selectedAccessories || [],
                                     selectedOtherAccessories: item.selectedOtherAccessories || [],
@@ -3554,8 +3454,9 @@ Total price: {totalUSD}`,
                         // 定义系列与模板名称关键词的映射
                         const seriesMap = {
                             'A': 'A系列',
-                            'C': 'C系列'
-                            // 可扩展其他系列映射
+                            'C': 'C系列',
+                            '1325C': '1325C',
+                            'Marker': '打标机'
                         };
                         
                         const targetKeyword = seriesMap[series] || null;
@@ -3706,8 +3607,12 @@ Total price: {totalUSD}`,
                     try {
                         // 机器型号（完整型号信息）
                         let machineModel = '';
-                        if (quoteData.selectedSeries && quoteData.selectedModel && quoteData.selectedPower) {
-                            machineModel = `${quoteData.selectedSeries} ${quoteData.selectedModel} ${quoteData.selectedPower}`;
+                        if (quoteData.selectedModel && quoteData.selectedPower) {
+                            machineModel = `${quoteData.selectedModel} ${quoteData.selectedPower}`;
+                        }
+                        // 如果某些特殊型号没有 model，保留安全 fallback
+                        if (!machineModel && quoteData.selectedSeries && quoteData.selectedModel) {
+                            machineModel = `${quoteData.selectedModel}`;
                         }
                         
                         // 功率参数
@@ -3725,6 +3630,26 @@ Total price: {totalUSD}`,
                             actualWeight = `${quoteData.selectedMachine.actualWeight} kg`;
                         }
                         
+                        // 气泵和风机
+                        let airPump = '-';
+                        let fan = '-';
+                        if (quoteData.selectedMachine) {
+                            airPump = quoteData.selectedMachine.airPump || '-';
+                            fan = quoteData.selectedMachine.fan || '-';
+                        }
+                        
+                        // 获取激光管名称（不含价格）
+                        let laserTube = '-';
+                        if (quoteData.selectedLaserTubeId && quoteData.selectedPower) {
+                            const tubeOptions = LASER_TUBE_OPTIONS[quoteData.selectedPower];
+                            if (tubeOptions) {
+                                const found = tubeOptions.find(opt => opt.id === quoteData.selectedLaserTubeId);
+                                if (found) {
+                                    laserTube = found.name;
+                                }
+                            }
+                        }
+                        
                         // 水冷机选择
                         let waterCooler = '未选择';
                         if (quoteData.selectedWaterCooler) {
@@ -3733,7 +3658,7 @@ Total price: {totalUSD}`,
                         }
                         
                         // 标准配件选择清单
-                        let standardAccessories = '无';
+                        let standardAccessories = '';
                         if (quoteData.selectedAccessories && quoteData.selectedAccessories.length > 0) {
                             const accessoryNames = quoteData.selectedAccessories.map(accId => {
                                 const acc = products.accessories.find(a => a.id === accId);
@@ -3758,6 +3683,9 @@ Total price: {totalUSD}`,
                             machinePower,
                             packingSize,
                             actualWeight,
+                            airPump,
+                            fan,
+                            laserTube,
                             waterCooler,
                             standardAccessories,
                             otherAccessories,
@@ -3851,12 +3779,6 @@ Total price: {totalUSD}`,
                 
                 // 国内运费计算函数
 
-                
-                // 预留国际运费计算函数
-                calcInternationalShipping() {
-                    // 本阶段不实现国际运费规则
-                    return 0;
-                }
             };
             
             // ==================== FormModule（纯 DOM 操作层）====================
@@ -3875,11 +3797,9 @@ Total price: {totalUSD}`,
                         seriesSelect.dispatchEvent(new Event('change'));
                     }
 
-                    // 水冷机选项清除
-                    document.querySelectorAll('#waterCoolerOptions .radio-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                        opt.querySelector('input').checked = false;
-                    });
+                    // 水冷机下拉框清除
+                    const waterCoolerSelect = document.getElementById('waterCoolerSelect');
+                    if (waterCoolerSelect) waterCoolerSelect.value = '';
 
                     // 配件选项清除
                     document.querySelectorAll('#accessoryOptions .checkbox-option').forEach(opt => {
@@ -3949,17 +3869,10 @@ Total price: {totalUSD}`,
                         }
                     }
 
-                    // 2. 设置水冷机（先清除同类选中状态，再设置当前）
-                    document.querySelectorAll('#waterCoolerOptions .radio-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                        opt.querySelector('input').checked = false;
-                    });
-                    if (quote.selectedWaterCooler) {
-                        const waterCoolerOption = document.querySelector(`.radio-option[data-value="${quote.selectedWaterCooler}"]`);
-                        if (waterCoolerOption) {
-                            waterCoolerOption.classList.add('selected');
-                            waterCoolerOption.querySelector('input').checked = true;
-                        }
+                    // 2. 设置水冷机下拉框
+                    const waterCoolerSelect = document.getElementById('waterCoolerSelect');
+                    if (waterCoolerSelect) {
+                        waterCoolerSelect.value = quote.selectedWaterCooler || '';
                     }
 
                     // 3. 设置配件（多选，仅设置当前选中的）
@@ -4040,7 +3953,7 @@ Total price: {totalUSD}`,
                  */
                 collectFormData() {
                     return {
-                        selectedWaterCooler: document.querySelector('input[name="waterCooler"]:checked')?.value || null,
+                        selectedWaterCooler: document.getElementById('waterCoolerSelect')?.value || null,
                         selectedAccessories: Array.from(document.querySelectorAll('#accessoryOptions input[type="checkbox"]:checked')).map(cb => cb.value),
                         internationalShipping: parseFloat(document.getElementById('internationalShipping').value) || 0,
                         domesticShipping: parseFloat(document.getElementById('domesticShipping').value) || 0,
@@ -4078,6 +3991,8 @@ Total price: {totalUSD}`,
                     searchText: ''
                 },
                 
+                isManualShipping: false,
+                
                 // DOM元素缓存初始化
                 initCache() {
                     try {
@@ -4099,7 +4014,6 @@ Total price: {totalUSD}`,
                             noTemplateSelected: document.getElementById('noTemplateSelected'),
                             selectedTemplateName: document.getElementById('selectedTemplateName'),
                             selectedTemplateContent: document.getElementById('selectedTemplateContent'),
-                            productDataTable: document.getElementById('productDataTable'),
                             templateList: document.getElementById('templateList'),
                             templateSelectList: document.getElementById('templateSelectList'),
 
@@ -4114,6 +4028,7 @@ Total price: {totalUSD}`,
                             closeHistoryPanel: document.getElementById('closeHistoryPanel'),
                             // 新增：费用明细显示元素
                             priceDetailMachine: document.getElementById('priceDetailMachine'),
+                            priceDetailLaserTube: document.getElementById('priceDetailLaserTube'),
                             priceDetailWaterCooler: document.getElementById('priceDetailWaterCooler'),
                             priceDetailAccessories: document.getElementById('priceDetailAccessories'),
                             priceDetailOtherAccessories: document.getElementById('priceDetailOtherAccessories'),
@@ -4286,13 +4201,19 @@ Total price: {totalUSD}`,
                                     powerSelect.disabled = true;
                                     powerSelect.innerHTML = '<option value="">请先选择型号</option>';
                                     this.hideMachineInfo();
+                                    const laserContainer = document.getElementById('laserTubeContainer');
+                                    if (laserContainer) laserContainer.style.display = 'none';
+                                    const laserOptions = document.getElementById('laserTubeOptions');
+                                    if (laserOptions) laserOptions.innerHTML = '';
                                 }
                                 
                                 DataModule.updateCurrentQuote({ 
                                     selectedSeries: series,
                                     selectedModel: '',
                                     selectedPower: '',
-                                    selectedMachine: null
+                                    selectedMachine: null,
+                                    selectedLaserTubeId: null,
+                                    laserTubeUpcharge: 0
                                 });
                                 CalculationEngine.recalculateAll();
                                 KHQuoteSystem.UIModule.renderAll();
@@ -4336,12 +4257,18 @@ Total price: {totalUSD}`,
                                     powerSelect.disabled = true;
                                     powerSelect.innerHTML = '<option value="">请先选择型号</option>';
                                     this.hideMachineInfo();
+                                    const laserContainer = document.getElementById('laserTubeContainer');
+                                    if (laserContainer) laserContainer.style.display = 'none';
+                                    const laserOptions = document.getElementById('laserTubeOptions');
+                                    if (laserOptions) laserOptions.innerHTML = '';
                                 }
                                 
                                 DataModule.updateCurrentQuote({ 
                                     selectedModel: model,
                                     selectedPower: '',
-                                    selectedMachine: null
+                                    selectedMachine: null,
+                                    selectedLaserTubeId: null,
+                                    laserTubeUpcharge: 0
                                 });
                                 CalculationEngine.recalculateAll();
                                 KHQuoteSystem.UIModule.renderAll(); // 新增
@@ -4364,17 +4291,23 @@ Total price: {totalUSD}`,
                                     
                                     DataModule.updateCurrentQuote({ 
                                         selectedPower: power,
-                                        selectedMachine: machine || { series, model, power, ...powerData }
+                                        selectedMachine: machine || { series, model, power, ...powerData },
+                                        selectedLaserTubeId: null,
+                                        laserTubeUpcharge: 0
                                     });
                                     
+                                    this.updateLaserTubeOptions();
                                     this.showMachineInfo(powerData);
                                     KHQuoteSystem.UIModule.updateInternationalShipping();
                                 } else {
                                     DataModule.updateCurrentQuote({ 
                                         selectedPower: '',
-                                        selectedMachine: null
+                                        selectedMachine: null,
+                                        selectedLaserTubeId: null,
+                                        laserTubeUpcharge: 0
                                     });
                                     this.hideMachineInfo();
+                                    document.getElementById('laserTubeContainer').style.display = 'none';
                                 }
                                 
                                 CalculationEngine.recalculateAll();
@@ -4399,6 +4332,13 @@ Total price: {totalUSD}`,
                             document.getElementById('cbmValue').textContent = powerData.cbm || '-';
                             document.getElementById('volumeWeight').textContent = powerData.volumeWeight || '-';
                             document.getElementById('actualWeight').textContent = powerData.actualWeight || '-';
+                            document.getElementById('airPumpValue').textContent = powerData.airPump || '-';
+                            document.getElementById('fanValue').textContent = powerData.fan || '-';
+                            
+                            const currentQuote = DataModule.getCurrentQuote();
+                            const isMarker = (currentQuote.selectedSeries === 'Marker');
+                            document.getElementById('airPumpValue').parentElement.style.display = isMarker ? 'none' : '';
+                            document.getElementById('fanValue').parentElement.style.display = isMarker ? 'none' : '';
                         }
                     } catch (error) {
                         console.error('显示机器信息失败:', error);
@@ -4416,6 +4356,98 @@ Total price: {totalUSD}`,
                     }
                 },
                 
+                updateLaserTubeOptions() {
+                    const power = DataModule.getCurrentQuote().selectedPower;
+                    const container = document.getElementById('laserTubeContainer');
+                    const optionsDiv = document.getElementById('laserTubeOptions');
+                    
+                    if (!power || !LASER_TUBE_OPTIONS[power]) {
+                        container.style.display = 'none';
+                        return;
+                    }
+                    
+                    container.style.display = 'block';
+                    const options = LASER_TUBE_OPTIONS[power];
+                    optionsDiv.innerHTML = '';
+                    
+                    // 创建按钮组容器（flex 布局）
+                    const btnGroup = document.createElement('div');
+                    btnGroup.className = 'laser-tube-btn-group';
+                    btnGroup.style.display = 'flex';
+                    btnGroup.style.gap = '12px';
+                    btnGroup.style.flexWrap = 'wrap';
+                    
+                    options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'laser-tube-btn';
+                        btn.dataset.id = opt.id;
+                        btn.dataset.upcharge = opt.upcharge;
+                        btn.textContent = `${opt.name} (+¥${opt.upcharge})`;
+                        
+                        // 样式
+                        btn.style.padding = '6px 16px';
+                        btn.style.border = '1px solid var(--gray-300)';
+                        btn.style.borderRadius = '6px';
+                        btn.style.backgroundColor = 'white';
+                        btn.style.cursor = 'pointer';
+                        btn.style.fontSize = '0.9rem';
+                        btn.style.transition = 'all 0.2s';
+                        btn.style.whiteSpace = 'nowrap';
+                        
+                        // 点击事件
+                        btn.addEventListener('click', (e) => {
+                            // 移除所有按钮的 active 样式
+                            document.querySelectorAll('.laser-tube-btn').forEach(b => {
+                                b.classList.remove('active');
+                                b.style.backgroundColor = 'white';
+                                b.style.borderColor = 'var(--gray-300)';
+                                b.style.color = 'inherit';
+                            });
+                            // 高亮当前按钮
+                            btn.classList.add('active');
+                            btn.style.backgroundColor = 'var(--primary-color)';
+                            btn.style.borderColor = 'var(--primary-color)';
+                            btn.style.color = 'white';
+                            
+                            // 更新数据
+                            DataModule.updateCurrentQuote({
+                                selectedLaserTubeId: btn.dataset.id,
+                                laserTubeUpcharge: parseInt(btn.dataset.upcharge) || 0
+                            });
+                            CalculationEngine.recalculateAll();
+                            UIModule.renderAll();
+                        });
+                        
+                        btnGroup.appendChild(btn);
+                    });
+                    
+                    optionsDiv.appendChild(btnGroup);
+                    
+                    // 如果没有选中的，则默认选中标配（upcharge === 0）
+                    let currentId = DataModule.getCurrentQuote().selectedLaserTubeId;
+                    if (!currentId) {
+                        const defaultOption = options.find(opt => opt.upcharge === 0);
+                        if (defaultOption) {
+                            currentId = defaultOption.id;
+                            DataModule.updateCurrentQuote({
+                                selectedLaserTubeId: currentId,
+                                laserTubeUpcharge: 0
+                            });
+                        }
+                    }
+                    // 高亮当前或默认选中的按钮
+                    if (currentId) {
+                        const targetBtn = document.querySelector(`.laser-tube-btn[data-id="${currentId}"]`);
+                        if (targetBtn) {
+                            targetBtn.classList.add('active');
+                            targetBtn.style.backgroundColor = 'var(--primary-color)';
+                            targetBtn.style.borderColor = 'var(--primary-color)';
+                            targetBtn.style.color = 'white';
+                        }
+                    }
+                },
+                
                 // 内部方法，用于更新所有产品价格标签
                 updateAllProductPrices() {
                     try {
@@ -4423,20 +4455,22 @@ Total price: {totalUSD}`,
                         const priceSource = currentQuote.priceSource;
                         const products = DataModule.getProducts();
                         
-                        // 批量更新水冷机价格显示
-                        const waterCoolerOptions = document.querySelectorAll('#waterCoolerOptions .radio-option');
-                        waterCoolerOptions.forEach(option => {
-                            const waterCoolerId = option.dataset.value;
-                            const waterCooler = products.waterCoolers.find(wc => wc.id === waterCoolerId);
-                            if (waterCooler) {
-                                const price = window.CalculationEngine.getUnitPriceById('waterCooler', waterCoolerId);
-                                const label = option.querySelector('label');
-                                const name = waterCooler.name;
-                                if (label) {
-                                    label.innerHTML = `${this.safeHtml(name)} <span class="product-price-display">(¥${QuoteModule.formatPrice(price)})</span>`;
-                                }
+                        // 更新水冷机下拉框价格显示
+                        const waterCoolerSelect = document.getElementById('waterCoolerSelect');
+                        if (waterCoolerSelect) {
+                            waterCoolerSelect.innerHTML = '<option value="">请选择水冷机</option>';
+                            products.waterCoolers.forEach(wc => {
+                                const price = CalculationEngine.getUnitPriceById('waterCooler', wc.id);
+                                const option = document.createElement('option');
+                                option.value = wc.id;
+                                option.textContent = `${wc.name} (¥${QuoteModule.formatPrice(price)})`;
+                                waterCoolerSelect.appendChild(option);
+                            });
+                            // 恢复当前选中值
+                            if (currentQuote.selectedWaterCooler) {
+                                waterCoolerSelect.value = currentQuote.selectedWaterCooler;
                             }
-                        });
+                        }
                         
                         // 批量更新配件价格显示
                         const accessoryOptions = document.querySelectorAll('#accessoryOptions .checkbox-option');
@@ -4499,28 +4533,17 @@ Total price: {totalUSD}`,
                         const currentQuote = DataModule.getCurrentQuote();
                         const priceSource = currentQuote.priceSource;
                         
-                        // 优化水冷机选项生成
-                        const waterCoolerContainer = document.getElementById('waterCoolerOptions');
-                        if (waterCoolerContainer) {
-                            const fragment = document.createDocumentFragment();
-                            
+                        // 生成水冷机下拉框选项
+                        const waterCoolerSelect = document.getElementById('waterCoolerSelect');
+                        if (waterCoolerSelect) {
+                            waterCoolerSelect.innerHTML = '<option value="">请选择水冷机</option>';
                             products.waterCoolers.forEach(wc => {
-                                const price = window.CalculationEngine.getUnitPriceById('waterCooler', wc.id);
-                                const option = document.createElement('div');
-                                option.className = 'radio-option';
-                                option.dataset.value = wc.id;
-                                option.innerHTML = `
-                                    <input type="radio" name="waterCooler" id="wc_${wc.id}" value="${wc.id}">
-                                    <label for="wc_${wc.id}" class="checkbox-label-wrapper">
-                                        ${this.safeHtml(wc.name)}
-                                        <span class="accessory-price">¥${QuoteModule.formatPrice(price)}</span>
-                                    </label>
-                                `;
-                                fragment.appendChild(option);
+                                const price = CalculationEngine.getUnitPriceById('waterCooler', wc.id);
+                                const option = document.createElement('option');
+                                option.value = wc.id;
+                                option.textContent = `${wc.name} (¥${QuoteModule.formatPrice(price)})`;
+                                waterCoolerSelect.appendChild(option);
                             });
-                            
-                            waterCoolerContainer.innerHTML = '';
-                            waterCoolerContainer.appendChild(fragment);
                         }
                         
                         // 优化配件选项生成
@@ -4941,37 +4964,16 @@ Total price: {totalUSD}`,
                 
                 bindProductSelectionEvents: function() {
                     try {
-                        // 水冷机选项（radio）处理
-                        const handleRadioClick = (option) => {
-                            const radio = option.querySelector('input[type="radio"]');
-                            if (radio) {
-                                radio.checked = true;
-                                document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
-                                option.classList.add('selected');
+                        // 水冷机下拉框事件
+                        const waterCoolerSelect = document.getElementById('waterCoolerSelect');
+                        if (waterCoolerSelect) {
+                            waterCoolerSelect.removeEventListener('change', waterCoolerSelect._changeHandler);
+                            const changeHandler = (e) => {
                                 KHQuoteSystem.QuoteController.handleFormChange();
-                            }
-                        };
-                        
-                        document.querySelectorAll('#waterCoolerOptions .radio-option').forEach(option => {
-                            // 移除旧事件避免重复
-                            option.removeEventListener('click', option._clickHandler);
-                            const clickHandler = (e) => {
-                                e.stopPropagation();
-                                handleRadioClick(option);
                             };
-                            option._clickHandler = clickHandler;
-                            option.addEventListener('click', clickHandler);
-                            
-                            const radioInput = option.querySelector('input[type="radio"]');
-                            if (radioInput) {
-                                radioInput.removeEventListener('click', radioInput._clickStop);
-                                radioInput._clickStop = (e) => e.stopPropagation();
-                                radioInput.addEventListener('click', radioInput._clickStop);
-                                radioInput.removeEventListener('change', radioInput._changeHandler);
-                                radioInput._changeHandler = () => handleRadioClick(option);
-                                radioInput.addEventListener('change', radioInput._changeHandler);
-                            }
-                        });
+                            waterCoolerSelect._changeHandler = changeHandler;
+                            waterCoolerSelect.addEventListener('change', changeHandler);
+                        }
                         
                         // 配件选择（checkbox）—— 增强整行点击区域
                         document.querySelectorAll('#accessoryOptions .checkbox-option').forEach(option => {
@@ -5161,6 +5163,16 @@ Total price: {totalUSD}`,
                         opt.querySelector('input').checked = false;
                     });
 
+                    // 清除激光管按钮高亮
+                    document.querySelectorAll('.laser-tube-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.style.backgroundColor = 'white';
+                        btn.style.borderColor = 'var(--gray-300)';
+                        btn.style.color = 'inherit';
+                    });
+                    const laserTubeContainer = document.getElementById('laserTubeContainer');
+                    if (laserTubeContainer) laserTubeContainer.style.display = 'none';
+
                     this.getElement('internationalShipping').value = 0;
                     this.getElement('domesticShipping').value = 0;
                     this.getElement('otherFees').value = 0;
@@ -5229,123 +5241,6 @@ Total price: {totalUSD}`,
                     }
                 },
                 
-                updateProductDataTable() {
-                    try {
-                        const products = DataModule.getProducts();
-                        const container = this.getElement('productDataTable');
-                        
-                        if (!container) return;
-                        
-                        let html = '<h4>现有产品数据</h4>';
-                        
-                        if (products.waterCoolers.length > 0) {
-                            html += '<h5>水冷机</h5>';
-                            html += '<table class="compact-table">';
-                            html += '<thead><tr><th>名称</th><th>型号</th><th>阶梯一</th><th>阶梯二</th><th>阶梯三</th><th>操作</th></tr></thead>';
-                            html += '<tbody>';
-                            products.waterCoolers.forEach(wc => {
-                                html += `<tr>
-                                    <td>${this.safeHtml(wc.name)}</td>
-                                    <td>${this.safeHtml(wc.model)}</td>
-                                    <td>¥${QuoteModule.formatPrice(wc.price)}</td>
-                                    <td>¥${QuoteModule.formatPrice(wc.priceTier2 || wc.price)}</td>
-                                    <td>¥${QuoteModule.formatPrice(wc.priceTier3 || wc.price)}</td>
-                                    <td><button class="btn btn-secondary btn-sm" onclick="KHQuoteSystem.UIModule.editProduct('${wc.id}')">编辑</button></td>
-                                </tr>`;
-                            });
-                            html += '</tbody></table>';
-                        }
-                        
-                        if (products.accessories.length > 0) {
-                            html += '<h5 style="margin-top: 15px;">配件</h5>';
-                            html += '<table class="compact-table">';
-                            html += '<thead><tr><th>名称</th><th>阶梯一</th><th>阶梯二</th><th>阶梯三</th><th>操作</th></tr></thead>';
-                            html += '<tbody>';
-                            products.accessories.forEach(acc => {
-                                html += `<tr>
-                                    <td>${this.safeHtml(acc.name)}</td>
-                                    <td>¥${QuoteModule.formatPrice(acc.price)}</td>
-                                    <td>¥${QuoteModule.formatPrice(acc.priceTier2 || acc.price)}</td>
-                                    <td>¥${QuoteModule.formatPrice(acc.priceTier3 || acc.price)}</td>
-                                    <td><button class="btn btn-secondary btn-sm" onclick="KHQuoteSystem.UIModule.editProduct('${acc.id}')">编辑</button></td>
-                                </tr>`;
-                            });
-                            html += '</tbody></table>';
-                        }
-                        
-                        if (products.otherAccessories.length > 0) {
-                            html += '<h5 style="margin-top: 15px;">其他配件</h5>';
-                            html += '<table class="compact-table">';
-                            html += '<thead><tr><th>名称</th><th>阶梯一</th><th>阶梯二</th><th>阶梯三</th><th>操作</th></tr></thead>';
-                            html += '<tbody>';
-                            products.otherAccessories.forEach(oacc => {
-                                html += `<tr>
-                                    <td>${this.safeHtml(oacc.name)}</td>
-                                    <td>¥${QuoteModule.formatPrice(oacc.price)}</td>
-                                    <td>¥${QuoteModule.formatPrice(oacc.priceTier2 || oacc.price)}</td>
-                                    <td>¥${QuoteModule.formatPrice(oacc.priceTier3 || oacc.price)}</td>
-                                    <td><button class="btn btn-secondary btn-sm" onclick="KHQuoteSystem.UIModule.editProduct('${oacc.id}')">编辑</button></td>
-                                </tr>`;
-                            });
-                            html += '</tbody></table>';
-                        }
-                        
-                        container.innerHTML = html;
-                    } catch (error) {
-                        console.error('更新产品数据表格失败:', error);
-                    }
-                },
-                
-                editProduct(productId) {
-                    try {
-                        const products = DataModule.getProducts();
-                        let product = null;
-                        let productType = '';
-                        
-                        if (products.waterCoolers.some(p => p.id === productId)) {
-                            product = products.waterCoolers.find(p => p.id === productId);
-                            productType = 'waterCooler';
-                        } else if (products.accessories.some(p => p.id === productId)) {
-                            product = products.accessories.find(p => p.id === productId);
-                            productType = 'accessory';
-                        } else if (products.otherAccessories.some(p => p.id === productId)) {
-                            product = products.otherAccessories.find(p => p.id === productId);
-                            productType = 'otherAccessory';
-                        }
-                        
-                        if (product) {
-                            document.getElementById('productType').value = productType;
-                            document.getElementById('productName').value = product.name || '';
-                            document.getElementById('productModel').value = product.model || '';
-                            document.getElementById('productPrice').value = product.price || 0;
-                            document.getElementById('productPriceTier2').value = product.priceTier2 || 0;
-                            document.getElementById('productPriceTier3').value = product.priceTier3 || 0;
-                            
-                            document.getElementById('saveProductData').dataset.productId = productId;
-                            document.getElementById('deleteProductData').dataset.productId = productId;
-                        }
-                    } catch (error) {
-                        console.error('编辑产品失败:', error);
-                        NotificationModule.showError('编辑产品失败');
-                    }
-                },
-                
-                clearProductForm() {
-                    try {
-                        document.getElementById('productType').value = 'waterCooler';
-                        document.getElementById('productName').value = '';
-                        document.getElementById('productModel').value = '';
-                        document.getElementById('productPrice').value = '';
-                        document.getElementById('productPriceTier2').value = '';
-                        document.getElementById('productPriceTier3').value = '';
-                        
-                        document.getElementById('saveProductData').dataset.productId = '';
-                        document.getElementById('deleteProductData').dataset.productId = '';
-                    } catch (error) {
-                        console.error('清空产品表单失败:', error);
-                    }
-                },
-                
                 updateTemplateList() {
                     try {
                         const templates = DataModule.getTemplates();
@@ -5386,81 +5281,7 @@ Total price: {totalUSD}`,
                     }
                 },
                 
-                // 更新模板选择列表（用于模板选择模态框）
-                updateTemplateSelectList() {
-                    try {
-                        const templates = DataModule.getTemplates();
-                        const container = this.getElement('templateSelectList');
-                        
-                        if (!container) return;
-                        
-                        if (templates.length === 0) {
-                            container.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><p>暂无模板，请在系统设置中创建模板</p></div>';
-                            return;
-                        }
-                        
-                        // 使用DocumentFragment优化
-                        const fragment = document.createDocumentFragment();
-                        
-                        templates.forEach(template => {
-                            const lastUsed = template.lastUsed ? new Date(template.lastUsed).toLocaleString('zh-CN') : '从未使用';
-                            const preview = QuoteModule.truncateString(template.content, 100);
-                            
-                            const item = document.createElement('div');
-                            item.className = 'template-list-item';
-                            item.innerHTML = `
-                                <div>
-                                    <strong>${this.safeHtml(template.name)}</strong>
-                                    <div class="template-preview">
-                                        ${this.safeHtml(preview)}
-                                    </div>
-                                    <div class="template-meta">
-                                        <span>最后使用: ${this.safeHtml(lastUsed)}</span>
-                                        <span>字符数: ${template.content.length}</span>
-                                    </div>
-                                </div>
-                                <div class="template-actions">
-                                    <button class="btn btn-primary btn-sm template-select-btn" data-template-id="${template.id}">选择</button>
-                                </div>
-                            `;
-                            fragment.appendChild(item);
-                        });
-                        
-                        container.innerHTML = '';
-                        container.appendChild(fragment);
-                        
-                        // 绑定选择按钮事件
-                        container.querySelectorAll('.template-select-btn').forEach(btn => {
-                            btn.addEventListener('click', (e) => {
-                                try {
-                                    const templateId = e.target.dataset.templateId;
-                                    this.selectTemplate(templateId);
-                                } catch (error) {
-                                    console.error('选择模板失败:', error);
-                                }
-                            });
-                        });
-                    } catch (error) {
-                        console.error('更新模板选择列表失败:', error);
-                    }
-                },
-                
-                selectTemplate(templateId) {
-                    try {
-                        const success = DataModule.selectTemplate(templateId);
-                        if (success) {
-                            DataModule.saveToLocalStorage();
-                            this.updateSelectedTemplateDisplay();
-                            this.hideModal('templateSelectModal');
-                            NotificationModule.showSuccess('模板选择成功');
-                        } else {
-                            NotificationModule.showError('选择模板失败');
-                        }
-                    } catch (error) {
-                        console.error('选择模板失败:', error);
-                        NotificationModule.showError('选择模板失败');
-                    }
-                },
+
                 
                 editTemplate(templateId) {
                     try {
@@ -5487,7 +5308,6 @@ Total price: {totalUSD}`,
                             if (success) {
                                 DataModule.saveToLocalStorage();
                                 this.updateTemplateList();
-                                this.updateTemplateSelectList();
                                 this.clearTemplateForm();
                                 NotificationModule.showSuccess('模板已删除');
                             } else {
@@ -5583,8 +5403,6 @@ Total price: {totalUSD}`,
                         
                         if (modalId === 'settingsModal') {
                             this.updateSettingsStats();
-                        } else if (modalId === 'templateSelectModal') {
-                            this.updateTemplateSelectList();
                         }
                     } catch (error) {
                         console.error('显示模态框失败:', error);
@@ -5642,6 +5460,7 @@ Total price: {totalUSD}`,
                 updatePriceDetailsFromState(state) {
                     try {
                         const priceDetailMachine = this.getElement('priceDetailMachine');
+                        const priceDetailLaserTube = this.getElement('priceDetailLaserTube');
                         const priceDetailWaterCooler = this.getElement('priceDetailWaterCooler');
                         const priceDetailAccessories = this.getElement('priceDetailAccessories');
                         const priceDetailOtherAccessories = this.getElement('priceDetailOtherAccessories');
@@ -5651,6 +5470,9 @@ Total price: {totalUSD}`,
                         const priceDetailTotal = this.getElement('priceDetailTotal');
                         
                         if (priceDetailMachine) priceDetailMachine.textContent = `¥${CalculationEngine.formatPrice(state.machinePrice)}`;
+                        const currentQuoteLaser = DataModule.getCurrentQuote();
+                        const laserUpcharge = currentQuoteLaser.laserTubeUpcharge || 0;
+                        if (priceDetailLaserTube) priceDetailLaserTube.textContent = `¥${CalculationEngine.formatPrice(laserUpcharge)}`;
                         if (priceDetailWaterCooler) priceDetailWaterCooler.textContent = `¥${CalculationEngine.formatPrice(state.waterChillerPrice)}`;
                         if (priceDetailAccessories) priceDetailAccessories.textContent = `¥${CalculationEngine.formatPrice(state.accessoriesPrice)}`;
                         if (priceDetailOtherAccessories) priceDetailOtherAccessories.textContent = `¥${CalculationEngine.formatPrice(state.otherPartsPrice)}`;
@@ -5665,12 +5487,15 @@ Total price: {totalUSD}`,
                 },
                 
                 updateInternationalShipping() {
+                    this.isManualShipping = false;
+                    this.isProgrammaticUpdate = true;
                     const currentQuote = DataModule.getCurrentQuote();
                     const machine = currentQuote.selectedMachine;
                     const type = document.getElementById('intlShippingType').value;
                     const unitPrice = parseFloat(document.getElementById('intlUnitPrice').value) || 0;
                     const shipping = CalculationEngine.calcInternationalShipping(machine, type, unitPrice);
                     document.getElementById('internationalShipping').value = shipping;
+                    this.isProgrammaticUpdate = false;
                     DataModule.updateCurrentQuote({ internationalShipping: shipping });
                     DataModule.updateCurrentQuote({ intlShippingType: type, intlUnitPrice: unitPrice });
                     CalculationEngine.recalculateAll();
@@ -5701,6 +5526,29 @@ Total price: {totalUSD}`,
                         });
                     });
                     setActive(hiddenInput.value || 'volumeWeight');
+                    
+                    const shippingInput = document.getElementById('internationalShipping');
+                    if (shippingInput) {
+                        shippingInput.addEventListener('input', (e) => {
+                            if (this.isProgrammaticUpdate) return;
+                            
+                            this.isManualShipping = true;
+                            
+                            let value = parseFloat(e.target.value);
+                            if (isNaN(value) || value < 0) value = 0;
+                            
+                            const unitPriceInput = document.getElementById('intlUnitPrice');
+                            if (unitPriceInput) unitPriceInput.value = 0;
+                            
+                            KHQuoteSystem.DataModule.updateCurrentQuote({
+                                internationalShipping: value,
+                                intlUnitPrice: 0
+                            });
+                            
+                            KHQuoteSystem.CalculationEngine.recalculateAll();
+                            KHQuoteSystem.UIModule.renderAll();
+                        });
+                    }
                 },
                 
                 renderAll() {
@@ -5716,8 +5564,11 @@ Total price: {totalUSD}`,
             
             // ==================== EventModule ====================
             const EventModule = {
+                _initialized: false,
                 init() {
+                    if (this._initialized) return;
                     this.setupEventListeners();
+                    this._initialized = true;
                 },
                 
                 setupEventListeners() {
@@ -5757,6 +5608,17 @@ Total price: {totalUSD}`,
                                     // 恢复输入框显示原值
                                     e.target.value = DataModule.getServiceFeeRate() * 100;
                                 }
+                            });
+                        }
+                        
+                        // 水冷机下拉框变更
+                        const waterCoolerSelect = document.getElementById('waterCoolerSelect');
+                        if (waterCoolerSelect) {
+                            waterCoolerSelect.addEventListener('change', (e) => {
+                                const value = e.target.value;
+                                DataModule.updateCurrentQuote({ selectedWaterCooler: value || null });
+                                CalculationEngine.recalculateAll();
+                                UIModule.renderAll();
                             });
                         }
                         
@@ -5859,13 +5721,10 @@ Total price: {totalUSD}`,
                         
 
                         
-                        // 选择模板按钮
-                        const selectTemplateBtn = document.getElementById('selectTemplateBtn');
-                        if (selectTemplateBtn) {
-                            selectTemplateBtn.addEventListener('click', () => {
-                                UIModule.showModal('templateSelectModal');
-                            });
-                        }
+                        // 一键下单按钮
+                        document.getElementById('selectTemplateBtn').addEventListener('click', function() {
+                            KHQuoteSystem.NotificationModule.showInfo('"一键下单"功能开发中，敬请期待！', '提示');
+                        });
                         
                         // 复制报价功能（基于模板）- 修复：复制时自动保存到历史记录
                         const copyQuoteBtn = document.getElementById('copyQuote');
@@ -5924,14 +5783,6 @@ Total price: {totalUSD}`,
                             });
                         }
                         
-                        // 模板选择模态框关闭按钮
-                        const closeTemplateSelectBtn = document.getElementById('closeTemplateSelect');
-                        if (closeTemplateSelectBtn) {
-                            closeTemplateSelectBtn.addEventListener('click', () => {
-                                UIModule.hideModal('templateSelectModal');
-                            });
-                        }
-                        
                         // 标签页切换
                         document.querySelectorAll('.tab').forEach(tab => {
                             tab.addEventListener('click', (e) => {
@@ -5946,123 +5797,6 @@ Total price: {totalUSD}`,
                                 }
                             });
                         });
-                        
-                        // 编辑产品数据按钮
-                        const editProductDataBtn = document.getElementById('editProductData');
-                        if (editProductDataBtn) {
-                            editProductDataBtn.addEventListener('click', () => {
-                                try {
-                                    const editor = document.getElementById('productDataEditor');
-                                    if (editor.style.display === 'none') {
-                                        editor.style.display = 'block';
-                                        UIModule.updateProductDataTable();
-                                    } else {
-                                        editor.style.display = 'none';
-                                    }
-                                } catch (error) {
-                                    console.error('显示产品编辑器失败:', error);
-                                }
-                            });
-                        }
-                        
-                        // 保存产品数据
-                        const saveProductDataBtn = document.getElementById('saveProductData');
-                        if (saveProductDataBtn) {
-                            saveProductDataBtn.addEventListener('click', () => {
-                                try {
-                                    const productType = document.getElementById('productType').value;
-                                    const productName = document.getElementById('productName').value.trim();
-                                    const productModel = document.getElementById('productModel').value.trim();
-                                    const productPrice = document.getElementById('productPrice').value;
-                                    const productPriceTier2 = document.getElementById('productPriceTier2').value;
-                                    const productPriceTier3 = document.getElementById('productPriceTier3').value;
-                                    const productId = document.getElementById('saveProductData').dataset.productId;
-                                    
-                                    if (!productName) {
-                                        NotificationModule.showWarning('产品名称不能为空');
-                                        return;
-                                    }
-                                    
-                                    if (!productPrice || parseFloat(productPrice) <= 0) {
-                                        NotificationModule.showWarning('产品价格必须大于0');
-                                        return;
-                                    }
-                                    
-                                    const productData = {
-                                        name: productName,
-                                        model: productModel,
-                                        price: parseFloat(productPrice),
-                                        priceTier2: parseFloat(productPriceTier2) || 0,
-                                        priceTier3: parseFloat(productPriceTier3) || 0
-                                    };
-                                    
-                                    let success = false;
-                                    if (productId) {
-                                        success = DataModule.updateProduct(productId, productData);
-                                    } else {
-                                        DataModule.addProduct(productType, productData);
-                                        success = true;
-                                    }
-                                    
-                                    if (success) {
-                                        DataModule.saveToLocalStorage();
-                                        UIModule.updateProductDataTable();
-                                        UIModule.initProductOptions();
-                                        // 重新初始化派生状态
-                                        UIModule.initOtherAccessoriesDerivedState();
-                                        UIModule.updateSettingsStats();
-                                        UIModule.clearProductForm();
-                                        NotificationModule.showSuccess(productId ? '产品已更新' : '产品已添加');
-                                    } else {
-                                        NotificationModule.showError('操作失败');
-                                    }
-                                } catch (error) {
-                                    console.error('保存产品数据失败:', error);
-                                    NotificationModule.showError('保存产品失败');
-                                }
-                            });
-                        }
-                        
-                        // 删除产品数据
-                        const deleteProductDataBtn = document.getElementById('deleteProductData');
-                        if (deleteProductDataBtn) {
-                            deleteProductDataBtn.addEventListener('click', () => {
-                                try {
-                                    const productId = document.getElementById('deleteProductData').dataset.productId;
-                                    if (!productId) {
-                                        NotificationModule.showWarning('请先选择要删除的产品');
-                                        return;
-                                    }
-                                    
-                                    if (confirm('确定要删除此产品吗？')) {
-                                        const success = DataModule.deleteProduct(productId);
-                                        if (success) {
-                                            DataModule.saveToLocalStorage();
-                                            UIModule.updateProductDataTable();
-                                            UIModule.initProductOptions();
-                                            // 重新初始化派生状态
-                                            UIModule.initOtherAccessoriesDerivedState();
-                                            UIModule.updateSettingsStats();
-                                            UIModule.clearProductForm();
-                                            NotificationModule.showSuccess('产品已删除');
-                                        } else {
-                                            NotificationModule.showError('删除产品失败');
-                                        }
-                                    }
-                                } catch (error) {
-                                    console.error('删除产品数据失败:', error);
-                                    NotificationModule.showError('删除产品失败');
-                                }
-                            });
-                        }
-                        
-                        // 清空产品表单
-                        const clearProductFormBtn = document.getElementById('clearProductForm');
-                        if (clearProductFormBtn) {
-                            clearProductFormBtn.addEventListener('click', () => {
-                                UIModule.clearProductForm();
-                            });
-                        }
                         
                         // 管理模板按钮
                         const manageTemplatesBtn = document.getElementById('manageTemplates');
@@ -6114,7 +5848,6 @@ Total price: {totalUSD}`,
                                     if (success) {
                                         DataModule.saveToLocalStorage();
                                         UIModule.updateTemplateList();
-                                        UIModule.updateTemplateSelectList();
                                         UIModule.updateSettingsStats();
                                         UIModule.clearTemplateForm();
                                         NotificationModule.showSuccess(templateId ? '模板已更新' : '模板已添加');
@@ -6259,11 +5992,44 @@ Total price: {totalUSD}`,
                                         const success = DataModule.resetAllToDefault(true);
                                         
                                         if (success) {
-                                            // 重新初始化UI
+                                            // 重置数据与表单
                                             setTimeout(() => {
-                                                UIModule.initUI();
+                                                // 1. 重置当前报价数据（清空所有选择）
+                                                KHQuoteSystem.DataModule.updateCurrentQuote({
+                                                    selectedSeries: '',
+                                                    selectedModel: '',
+                                                    selectedPower: '',
+                                                    selectedMachine: null,
+                                                    selectedLaserTubeId: null,
+                                                    laserTubeUpcharge: 0,
+                                                    selectedWaterCooler: null,
+                                                    selectedAccessories: [],
+                                                    selectedOtherAccessories: [],
+                                                    internationalShipping: 0,
+                                                    domesticShipping: 0,
+                                                    otherFees: 0,
+                                                    otherFees2: 0,
+                                                    quantity: 1,
+                                                    selectedProvince: '',
+                                                    priceSource: 'tier1',
+                                                    totalCNY: 0,
+                                                    totalUSD: 0,
+                                                    selectedTemplateId: null
+                                                });
+
+                                                // 2. 重置表单 DOM（清空所有选中样式、输入框）
+                                                UIModule._resetFormDOM();
+
+                                                // 3. 刷新下拉框、产品列表、历史记录等（但不重新绑定事件）
+                                                UIModule.updateSeriesSelect();
+                                                UIModule.initProductOptions();
+                                                UIModule.initOtherAccessoriesDerivedState();
+                                                UIModule.updateHistoryDisplay();
+                                                UIModule.updateSettingsStats();
+                                                UIModule.renderAll();
+
                                                 UIModule.hideLoading();
-                                                NotificationModule.showSuccess('所有数据已恢复为默认值！', '机器、配件、模板、汇率已重置，历史记录已保留。');
+                                                NotificationModule.showSuccess('所有数据已恢复为默认值！');
                                             }, 500);
                                         } else {
                                             UIModule.hideLoading();
@@ -6351,6 +6117,7 @@ Total price: {totalUSD}`,
             const AppState = {
                 // 基础状态
                 machinePrice: 0,
+                laserTubeUpcharge: 0,
                 accessoriesPrice: 0,
                 waterChillerPrice: 0,
                 otherPartsPrice: 0,
@@ -6396,6 +6163,7 @@ Total price: {totalUSD}`,
                 // 第一层：计算各项费用小计
                 calculateSubtotal() {
                     return this.machinePrice +
+                           this.laserTubeUpcharge +
                            this.waterChillerPrice +
                            this.accessoriesPrice +
                            this.otherPartsPrice +
@@ -6479,14 +6247,16 @@ Total price: {totalUSD}`,
                         this.otherFee2 = parseFloat(currentQuote.otherFees2) || 0;
                         this.province = currentQuote.selectedProvince || '';
                         
-                        // 机器价格
+                        // 机器价格（不含激光管加价）
                         if (currentQuote.selectedMachine) {
                             this.machinePrice = CalculationEngine.getPriceByTier(
                                 currentQuote.selectedMachine, 
                                 priceSource
                             );
+                            this.laserTubeUpcharge = currentQuote.laserTubeUpcharge || 0;
                         } else {
                             this.machinePrice = 0;
+                            this.laserTubeUpcharge = 0;
                         }
                         
                         // 水冷机价格
@@ -6494,7 +6264,11 @@ Total price: {totalUSD}`,
                             const waterCooler = products.waterCoolers.find(wc => wc.id === currentQuote.selectedWaterCooler);
                             if (waterCooler) {
                                 this.waterChillerPrice = CalculationEngine.getPriceByTier(waterCooler, priceSource);
+                            } else {
+                                this.waterChillerPrice = 0;
                             }
+                        } else {
+                            this.waterChillerPrice = 0;
                         }
                         
                         // 配件价格
@@ -6742,6 +6516,7 @@ Total price: {totalUSD}`,
                         // 机器价格
                         if (quoteData.selectedMachine) {
                             machinePrice = this.getPriceByTier(quoteData.selectedMachine, priceSource);
+                            machinePrice += quoteData.laserTubeUpcharge || 0;
                             totalCNY += machinePrice;
                         }
 
@@ -6818,11 +6593,6 @@ Total price: {totalUSD}`,
                         // 使用 Utils 的默认结果（已修复）
                         return Utils.getDefaultPriceResult();
                     }
-                },
-                
-                // 获取默认价格结果
-                getDefaultPriceResult() {
-                    return Utils.getDefaultPriceResult(); // 直接复用已修复的 Utils 方法
                 }
             };
         })();
@@ -6843,6 +6613,8 @@ Total price: {totalUSD}`,
                     selectedPower: historyQuote.selectedPower || '',
                     selectedMachine: historyQuote.selectedMachine ?
                         KHQuoteSystem.DataModule.deepClone(historyQuote.selectedMachine) : null,
+                    selectedLaserTubeId: historyQuote.selectedLaserTubeId || null,
+                    laserTubeUpcharge: historyQuote.laserTubeUpcharge || 0,
                     selectedWaterCooler: historyQuote.selectedWaterCooler || null,
                     selectedAccessories: [...(historyQuote.selectedAccessories || [])],
                     selectedOtherAccessories: [...(historyQuote.selectedOtherAccessories || [])],
@@ -6876,6 +6648,7 @@ Total price: {totalUSD}`,
                 const restoredData = this._restoreFromHistory(quote);
                 KHQuoteSystem.DataModule.updateCurrentQuote(restoredData);
 
+                KHQuoteSystem.UIModule.updateLaserTubeOptions();
                 KHQuoteSystem.CalculationEngine.recalculateAll();
                 KHQuoteSystem.UIModule.updateInternationalShipping();
                 KHQuoteSystem.UIModule.renderAll();
@@ -6900,6 +6673,8 @@ Total price: {totalUSD}`,
                     selectedModel: '',
                     selectedPower: '',
                     selectedMachine: null,
+                    selectedLaserTubeId: null,
+                    laserTubeUpcharge: 0,
                     selectedWaterCooler: null,
                     selectedAccessories: [],
                     selectedOtherAccessories: [],
